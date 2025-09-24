@@ -10,7 +10,7 @@ import HomeStack from "./navigation/HomeStack";
 import ExploreScreen from "./screens/ExploreScreen";
 import AlertsScreen from "./screens/AlertsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
-import CartStack from "./navigation/CartStack"; // Import the CartStack
+import CartStack from "./navigation/CartStack";
 import CartScreen from "./screens/CartScreen";
 
 const Tab = createBottomTabNavigator();
@@ -79,7 +79,7 @@ export default function App() {
       <NavigationContainer>
         <MyTabs />
         {/* Add floating cart button */}
-        <FloatingCartButton />
+        {/* <FloatingCartButton /> */}
       </NavigationContainer>
     </CartProvider>
   );

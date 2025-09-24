@@ -1,6 +1,7 @@
 // src/contexts/CartContext.js
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native'; // <-- To show warning popup
 
 const CartContext = createContext();
 
@@ -69,7 +70,22 @@ export const CartProvider = ({ children }) => {
     saveCart();
   }, [cart, isLoading]);
 
+  // ---- Custom Logic: Only one restaurant ----
   const addItem = (item) => {
+    if (cart.length > 0) {
+      const currentRestaurant = cart[0].restaurantId; // Assume each item has restaurantId
+      if (item.restaurantId !== currentRestaurant) {
+        Alert.alert(
+          "Multiple Restaurants Not Allowed",
+          "You can only order from one restaurant at a time."
+        );
+        return; // ❌ Block adding
+        // OR 👉 if you prefer clearing cart instead, do:
+        // dispatch({ type: 'CLEAR_CART' });
+        // dispatch({ type: 'ADD_ITEM', payload: item });
+        // return;
+      }
+    }
     dispatch({ type: 'ADD_ITEM', payload: item });
   };
 
@@ -87,10 +103,8 @@ export const CartProvider = ({ children }) => {
 
   const cartItems = Array.isArray(cart) ? cart : [];
   const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-  
-  // Calculate subtotal as NUMBER
+
   const subtotal = cartItems.reduce((sum, item) => {
-    // Handle both string prices (like "₹100") and number prices
     let priceValue = 0;
     if (typeof item.price === 'string') {
       priceValue = parseFloat(item.price.replace('₹', '')) || 0;
@@ -101,7 +115,6 @@ export const CartProvider = ({ children }) => {
     return sum + (priceValue * quantity);
   }, 0);
 
-  // Format subtotal as string for display
   const formattedSubtotal = `₹${subtotal.toFixed(2)}`;
 
   const value = {
@@ -111,8 +124,8 @@ export const CartProvider = ({ children }) => {
     updateQuantity,
     clearCart,
     totalItems,
-    subtotal, // Return as number for calculations
-    formattedSubtotal, // Return as string for display
+    subtotal,
+    formattedSubtotal,
     isLoading
   };
 

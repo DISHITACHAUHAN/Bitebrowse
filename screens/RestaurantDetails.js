@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   View,
   Text,
@@ -11,23 +11,26 @@ import {
   Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
-import { useCart } from '../contexts/CartContext';
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { useCart } from "../contexts/CartContext";
 
 const RestaurantDetails = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { restaurant } = route.params;
   const { addItem, removeItem, updateQuantity, cart } = useCart();
-  const scrollY = new Animated.Value(0);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Sample menu data
   const sampleMenuItems = [
     {
       id: "1",
       name: "Butter Chicken",
-      description: "Creamy tomato-based curry with tender chicken pieces, cooked in rich spices.",
+      description:
+        "Creamy tomato-based curry with tender chicken pieces, cooked in rich spices.",
       price: "₹250",
-      image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400",
+      image:
+        "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400",
       category: "Main Course",
       isVeg: false,
       bestseller: true,
@@ -35,18 +38,22 @@ const RestaurantDetails = () => {
     {
       id: "2",
       name: "Garlic Naan",
-      description: "Soft and fluffy Indian flatbread with fresh garlic and herbs.",
+      description:
+        "Soft and fluffy Indian flatbread with fresh garlic and herbs.",
       price: "₹80",
-      image: "https://images.unsplash.com/photo-1563379091339-03246963d9fb?w=400",
+      image:
+        "https://images.unsplash.com/photo-1563379091339-03246963d9fb?w=400",
       category: "Breads",
       isVeg: true,
     },
     {
       id: "3",
       name: "Vegetable Biryani",
-      description: "Fragrant basmati rice cooked with fresh vegetables and aromatic spices.",
+      description:
+        "Fragrant basmati rice cooked with fresh vegetables and aromatic spices.",
       price: "₹180",
-      image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400",
+      image:
+        "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400",
       category: "Main Course",
       isVeg: true,
       bestseller: true,
@@ -56,7 +63,8 @@ const RestaurantDetails = () => {
       name: "Mango Lassi",
       description: "Refreshing yogurt drink with sweet mango pulp.",
       price: "₹120",
-      image: "https://images.unsplash.com/photo-1568724001336-2101ca2a0f8e?w=400",
+      image:
+        "https://images.unsplash.com/photo-1568724001336-2101ca2a0f8e?w=400",
       category: "Beverages",
       isVeg: true,
     },
@@ -65,14 +73,15 @@ const RestaurantDetails = () => {
       name: "Paneer Tikka",
       description: "Grilled cottage cheese cubes marinated in spices.",
       price: "₹220",
-      image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400",
+      image:
+        "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400",
       category: "Starters",
       isVeg: true,
       bestseller: true,
     },
   ];
 
-  // Group by category
+  // Group menu by category
   const groupedMenu = sampleMenuItems.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push(item);
@@ -80,16 +89,16 @@ const RestaurantDetails = () => {
   }, {});
 
   const handleAdd = (item) => {
-    const cartItem = { 
-      ...item, 
-      restaurantName: restaurant.name, 
-      restaurantId: restaurant.id 
+    const cartItem = {
+      ...item,
+      restaurantName: restaurant.name,
+      restaurantId: restaurant.id,
     };
     addItem(cartItem);
   };
 
   const handleQuantityChange = (itemId, delta) => {
-    const existing = cart.find(item => item.id === itemId);
+    const existing = cart.find((item) => item.id === itemId);
     if (existing) {
       const newQty = Math.max(0, existing.quantity + delta);
       if (newQty === 0) {
@@ -104,11 +113,11 @@ const RestaurantDetails = () => {
   const headerBackgroundOpacity = scrollY.interpolate({
     inputRange: [0, 200],
     outputRange: [0, 1],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   const renderMenuItem = ({ item }) => {
-    const existingItem = cart.find(cItem => cItem.id === item.id);
+    const existingItem = cart.find((cItem) => cItem.id === item.id);
     const quantity = existingItem ? existingItem.quantity : 0;
 
     return (
@@ -121,51 +130,66 @@ const RestaurantDetails = () => {
                 <Text style={styles.bestsellerText}>Bestseller</Text>
               </View>
             )}
-            
+
             <View style={styles.vegNonVegIndicator}>
-              <View style={[styles.indicator, item.isVeg ? styles.vegIndicator : styles.nonVegIndicator]} />
+              <View
+                style={[
+                  styles.indicator,
+                  item.isVeg ? styles.vegIndicator : styles.nonVegIndicator,
+                ]}
+              />
             </View>
-            
+
             <Text style={styles.menuItemName}>{item.name}</Text>
             <Text style={styles.menuItemPrice}>{item.price}</Text>
             {item.description ? (
-              <Text style={styles.menuItemDescription}>{item.description}</Text>
+              <Text style={styles.menuItemDescription}>
+                {item.description}
+              </Text>
             ) : null}
-            
+
             {item.image ? (
-              <Image source={{ uri: item.image }} style={styles.menuItemImage} resizeMode="cover" />
+              <Image
+                source={{ uri: item.image }}
+                style={styles.menuItemImage}
+                resizeMode="cover"
+              />
             ) : null}
           </View>
-          
+
           <View style={styles.menuItemAction}>
             {item.image ? (
-              <Image source={{ uri: item.image }} style={styles.menuItemImageSmall} resizeMode="cover" />
+              <Image
+                source={{ uri: item.image }}
+                style={styles.menuItemImageSmall}
+                resizeMode="cover"
+              />
             ) : (
               <View style={styles.menuItemImagePlaceholder}>
                 <Ionicons name="fast-food" size={24} color="#999" />
               </View>
             )}
-            
+
             <View style={styles.quantityContainer}>
               {quantity > 0 ? (
                 <View style={styles.quantityControls}>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.quantityButton}
                     onPress={() => handleQuantityChange(item.id, -1)}
                   >
-                    <Ionicons name="remove" size={20} color="#E23E3E" />
+                    <Ionicons name="remove" size={20} color="#fff" />
                   </TouchableOpacity>
                   <Text style={styles.quantityText}>{quantity}</Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.quantityButton}
                     onPress={() => handleQuantityChange(item.id, 1)}
                   >
-                    <Ionicons name="add" size={20} color="#E23E3E" />
+                    <Ionicons name="add" size={20} color="#fff" />
                   </TouchableOpacity>
                 </View>
               ) : (
-                <TouchableOpacity 
-                  style={styles.addButton} 
+                <TouchableOpacity
+                  style={styles.addButton}
                   onPress={() => handleAdd(item)}
                 >
                   <Text style={styles.addButtonText}>ADD</Text>
@@ -182,7 +206,9 @@ const RestaurantDetails = () => {
     <View key={index} style={styles.categorySection}>
       <View style={styles.categoryHeader}>
         <Text style={styles.categoryTitle}>{category}</Text>
-        <Text style={styles.categoryItemCount}>({groupedMenu[category].length} items)</Text>
+        <Text style={styles.categoryItemCount}>
+          ({groupedMenu[category].length} items)
+        </Text>
       </View>
       <FlatList
         data={groupedMenu[category]}
@@ -194,23 +220,36 @@ const RestaurantDetails = () => {
     </View>
   );
 
-  // Calculate total items in cart for this restaurant
-  const restaurantCartItems = cart.filter(item => item.restaurantId === restaurant.id);
-  const totalItems = restaurantCartItems.reduce((sum, item) => sum + item.quantity, 0);
+  // Calculate cart totals
+  const restaurantCartItems = cart.filter(
+    (item) => item.restaurantId === restaurant.id
+  );
+  const totalItems = restaurantCartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
   const totalAmount = restaurantCartItems.reduce((sum, item) => {
-    const price = parseInt(item.price.replace('₹', '')) || 0;
-    return sum + (price * item.quantity);
+    const price = parseInt(item.price.replace("₹", "")) || 0;
+    return sum + price * item.quantity;
   }, 0);
 
   const renderImage = () => {
-    if (restaurant.image && typeof restaurant.image === 'string' && !restaurant.image.startsWith('http')) {
+    if (
+      restaurant.image &&
+      typeof restaurant.image === "string" &&
+      !restaurant.image.startsWith("http")
+    ) {
       return <Text style={styles.emojiImage}>{restaurant.image}</Text>;
     }
     return (
-      <Image 
-        source={{ uri: restaurant.image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400" }} 
-        style={styles.headerImage} 
-        resizeMode="cover" 
+      <Image
+        source={{
+          uri:
+            restaurant.image ||
+            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400",
+        }}
+        style={styles.headerImage}
+        resizeMode="cover"
       />
     );
   };
@@ -218,12 +257,14 @@ const RestaurantDetails = () => {
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="transparent" translucent />
-      
+
       {/* Animated Header Background */}
-      <Animated.View style={[styles.animatedHeader, { opacity: headerBackgroundOpacity }]} />
-      
-      <Animated.ScrollView 
-        style={styles.scrollView} 
+      <Animated.View
+        style={[styles.animatedHeader, { opacity: headerBackgroundOpacity }]}
+      />
+
+      <Animated.ScrollView
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -235,23 +276,28 @@ const RestaurantDetails = () => {
         <View style={styles.header}>
           {renderImage()}
           <View style={styles.headerOverlay}>
-            <TouchableOpacity style={styles.backButton}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
               <Ionicons name="chevron-back" size={24} color="#fff" />
             </TouchableOpacity>
-            
+
             <View style={styles.headerContent}>
               <Text style={styles.restaurantName}>{restaurant.name}</Text>
-              
+
               <View style={styles.ratingContainer}>
                 <View style={styles.ratingBadge}>
                   <Ionicons name="star" size={14} color="#fff" />
                   <Text style={styles.rating}>{restaurant.rating}</Text>
                 </View>
-                <Text style={styles.ratingCount}>({restaurant.reviewsCount})</Text>
+                <Text style={styles.ratingCount}>
+                  ({restaurant.reviewsCount})
+                </Text>
               </View>
-              
+
               <Text style={styles.restaurantCuisine}>{restaurant.cuisine}</Text>
-              
+
               <View style={styles.deliveryInfo}>
                 <View style={styles.infoItem}>
                   <Ionicons name="time-outline" size={16} color="#fff" />
@@ -266,12 +312,14 @@ const RestaurantDetails = () => {
                   <Text style={styles.infoText}>{restaurant.price}</Text>
                 </View>
               </View>
-              
+
               <View style={styles.tagContainer}>
                 {restaurant.discount && (
                   <View style={styles.discountTag}>
                     <Ionicons name="pricetag" size={12} color="#fff" />
-                    <Text style={styles.discountText}>{restaurant.discount}</Text>
+                    <Text style={styles.discountText}>
+                      {restaurant.discount}
+                    </Text>
                   </View>
                 )}
                 {restaurant.isPureVeg && (
@@ -288,7 +336,9 @@ const RestaurantDetails = () => {
         {/* Safety Info Banner */}
         <View style={styles.safetyBanner}>
           <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
-          <Text style={styles.safetyText}>Follows all safety measures for a safe dining experience</Text>
+          <Text style={styles.safetyText}>
+            Follows all safety measures for a safe dining experience
+          </Text>
         </View>
 
         {/* Menu Sections */}
@@ -301,9 +351,11 @@ const RestaurantDetails = () => {
               </View>
             )}
           </View>
-          
+
           {Object.keys(groupedMenu).length > 0 ? (
-            Object.keys(groupedMenu).map((category, index) => renderCategory(category, index))
+            Object.keys(groupedMenu).map((category, index) =>
+              renderCategory(category, index)
+            )
           ) : (
             <View style={styles.noMenuContainer}>
               <Ionicons name="restaurant" size={64} color="#ddd" />
@@ -311,19 +363,24 @@ const RestaurantDetails = () => {
             </View>
           )}
         </View>
-        
+
         <View style={styles.spacer} />
       </Animated.ScrollView>
 
       {/* Floating Cart Button */}
       {totalItems > 0 && (
-        <TouchableOpacity style={styles.floatingCart}>
+        <TouchableOpacity
+          style={styles.floatingCart}
+          onPress={() => navigation.navigate("Cart")}
+        >
           <View style={styles.cartContent}>
             <View style={styles.cartBadgeFloating}>
               <Text style={styles.cartBadgeText}>{totalItems}</Text>
             </View>
             <View style={styles.cartInfo}>
-              <Text style={styles.cartCount}>View Cart • {totalItems} items</Text>
+              <Text style={styles.cartCount}>
+                View Cart • {totalItems} items
+              </Text>
               <Text style={styles.cartTotal}>₹{totalAmount}</Text>
             </View>
             <View style={styles.viewCartButton}>
@@ -336,7 +393,6 @@ const RestaurantDetails = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
