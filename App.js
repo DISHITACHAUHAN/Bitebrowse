@@ -4,13 +4,14 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-
+import { useNavigation } from '@react-navigation/native';
 import { CartProvider, useCart } from "./contexts/CartContext";
 import HomeStack from "./navigation/HomeStack";
 import ExploreScreen from "./screens/ExploreScreen";
 import AlertsScreen from "./screens/AlertsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import CartStack from "./navigation/CartStack"; // Import the CartStack
+import CartScreen from "./screens/CartScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -64,9 +65,9 @@ function MyTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="Explore" component={ExploreScreen} />
+      {/* <Tab.Screen name="Explore" component={ExploreScreen} />  */}
       <Tab.Screen name="Alerts" component={AlertsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      {/* <Tab.Screen name="Profile" component={ProfileScreen} /> */}
       {/* Remove the Cart tab if you're using floating button */}
     </Tab.Navigator>
   );

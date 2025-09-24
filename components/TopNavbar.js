@@ -1,11 +1,20 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, useWindowDimensions, Platform, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  useWindowDimensions,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 
 export default function TopNavbar() {
   const { width } = useWindowDimensions();
-  
+  const navigation = useNavigation();
+
   // Calculate responsive padding based on screen width
   const getResponsivePadding = () => {
     if (width < 375) return 16;
@@ -17,19 +26,29 @@ export default function TopNavbar() {
   const responsivePadding = getResponsivePadding();
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <View style={[styles.container, { paddingHorizontal: responsivePadding }]}>
+    <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <View
+        style={[styles.container, { paddingHorizontal: responsivePadding }]}
+      >
+        {/* Brand Section */}
         <View style={styles.brandContainer}>
           <Ionicons name="compass-outline" size={24} color="#2563eb" />
           <Text style={styles.brandName}>BiteBrowse</Text>
         </View>
-        
+
+        {/* User Section */}
         <View style={styles.userContainer}>
           <Text style={styles.userGreeting}>Hello, John</Text>
-          <Image
-            source={{ uri: "https://i.pravatar.cc/150?img=3" }}
-            style={styles.profileImage}
-          />
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Profile")} // 👈 navigate to Profile screen
+            activeOpacity={0.7}
+          >
+            <Image
+              source={{ uri: "https://i.pravatar.cc/150?img=3" }}
+              style={styles.profileImage}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -46,7 +65,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   container: {
-    height: 60, // Reduced height since SafeAreaView adds padding
+    height: 60,
     backgroundColor: "#ffffff",
     flexDirection: "row",
     justifyContent: "space-between",

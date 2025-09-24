@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../contexts/CartContext';
+import { useNavigation } from '@react-navigation/native';
+
 
 const CartScreen = ({ navigation }) => {
   const { cart, removeItem, updateQuantity, clearCart, totalItems, subtotal, formattedSubtotal } = useCart();

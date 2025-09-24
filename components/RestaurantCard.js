@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native'; // Use hook for navigation
+// import { useNavigation } from '@react-navigation/native'; // Use hook for navigation
 
 const RestaurantCard = ({ restaurant }) => {
   const navigation = useNavigation(); // Gets navigation from context (works in nested stack)
