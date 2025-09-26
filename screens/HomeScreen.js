@@ -10,7 +10,7 @@ import SearchBar from "../components/SearchBar";
 import CategoriesList from "../components/CategoriesList";
 import NearbyRestaurants from "../components/NearbyRestaurants";
 
-// Mock Data (same as before)
+// Mock Data (expanded slightly for completeness)
 const MOCK_RESTAURANTS = [
   {
     id: "1",
@@ -24,15 +24,31 @@ const MOCK_RESTAURANTS = [
     noPackagingCharges: true,
     isPureVeg: false,
     reviewsCount: "50+",
-    image: "🍰"
+    image: "https://example.com/cake-queen.jpg" // Changed to URL for Image compatibility (emoji fallback if needed)
   },
-  // ... other restaurant data
+  {
+    id: "2",
+    name: "Spice Haven",
+    cuisine: "South Indian",
+    rating: 4.5,
+    distance: "2.3 km",
+    time: "25-30 mins",
+    price: "₹150 for one",
+    discount: "50% OFF up to ₹100",
+    noPackagingCharges: false,
+    isPureVeg: true,
+    reviewsCount: "120+",
+    image: "https://example.com/spice-haven.jpg"
+  },
+  // Add more as needed
 ];
 
 const CUISINE_CATEGORIES = [
   { id: "all", name: "All", icon: "🍽️" },
   { id: "indian", name: "Indian", icon: "🍛" },
-  // ... other categories
+  { id: "chinese", name: "Chinese", icon: "🍜" },
+  { id: "italian", name: "Italian", icon: "🍕" },
+  // Add more as needed
 ];
 
 export default function HomeScreen({ navigation }) {
@@ -63,7 +79,7 @@ export default function HomeScreen({ navigation }) {
   }, [searchQuery, selectedCategory, restaurants]);
 
   const handleRestaurantPress = (restaurant) => {
-    // Navigate to restaurant details screen
+    // Navigate to restaurant details screen (matches stack name)
     navigation.navigate("RestaurantDetails", { restaurant });
   };
 

@@ -28,12 +28,6 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header Section */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity style={styles.editButton}>
-          <Ionicons name="settings-outline" size={22} color="#64748b" />
-        </TouchableOpacity>
-      </View>
 
       {/* Profile Card */}
       <View style={styles.profileCard}>
