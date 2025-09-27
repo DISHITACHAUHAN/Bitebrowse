@@ -9,7 +9,7 @@ import TopNavbar from "../components/TopNavbar";
 import SearchBar from "../components/SearchBar";
 import CategoriesList from "../components/CategoriesList";
 import NearbyRestaurants from "../components/NearbyRestaurants";
-
+import PromoCarousel from "../components/PromoCarousel";
 // Mock Data (expanded slightly for completeness)
 const MOCK_RESTAURANTS = [
   {
@@ -94,9 +94,7 @@ export default function HomeScreen({ navigation }) {
       {/* Main Scrollable Content */}
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Location Header */}
-        <View style={styles.locationContainer}>
-          <Text style={styles.locationText}>New Delhi, India</Text>
-        </View>
+        
 
         {/* Search Bar */}
         <SearchBar
@@ -104,18 +102,15 @@ export default function HomeScreen({ navigation }) {
           onSearchChange={setSearchQuery}
           onClearSearch={handleClearSearch}
         />
+        <PromoCarousel />
 
         {/* Categories */}
-        <CategoriesList
-          categories={CUISINE_CATEGORIES}
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-        />
+        
 
         {/* Restaurants */}
         <View style={styles.restaurantsSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Nearby Restaurants</Text>
+            <Text style={styles.sectionTitle}>Food Court</Text>
           </View>
 
           <NearbyRestaurants

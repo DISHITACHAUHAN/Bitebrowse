@@ -276,13 +276,6 @@ const RestaurantDetails = () => {
         <View style={styles.header}>
           {renderImage()}
           <View style={styles.headerOverlay}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="chevron-back" size={24} color="#fff" />
-            </TouchableOpacity>
-
             <View style={styles.headerContent}>
               <Text style={styles.restaurantName}>{restaurant.name}</Text>
 
@@ -296,32 +289,17 @@ const RestaurantDetails = () => {
                 </Text>
               </View>
 
-              <Text style={styles.restaurantCuisine}>{restaurant.cuisine}</Text>
+              {/* <Text style={styles.restaurantCuisine}>{restaurant.cuisine}</Text> */}
 
               <View style={styles.deliveryInfo}>
                 <View style={styles.infoItem}>
                   <Ionicons name="time-outline" size={16} color="#fff" />
                   <Text style={styles.infoText}>{restaurant.time}</Text>
                 </View>
-                <View style={styles.infoItem}>
-                  <Ionicons name="navigate-outline" size={16} color="#fff" />
-                  <Text style={styles.infoText}>{restaurant.distance}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Ionicons name="cash-outline" size={16} color="#fff" />
-                  <Text style={styles.infoText}>{restaurant.price}</Text>
-                </View>
+                
               </View>
 
-              <View style={styles.tagContainer}>
-                {restaurant.discount && (
-                  <View style={styles.discountTag}>
-                    <Ionicons name="pricetag" size={12} color="#fff" />
-                    <Text style={styles.discountText}>
-                      {restaurant.discount}
-                    </Text>
-                  </View>
-                )}
+              <View style={styles.tagContainer}> 
                 {restaurant.isPureVeg && (
                   <View style={styles.vegTag}>
                     <Ionicons name="leaf" size={12} color="#fff" />

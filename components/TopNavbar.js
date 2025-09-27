@@ -15,7 +15,6 @@ export default function TopNavbar() {
   const { width } = useWindowDimensions();
   const navigation = useNavigation();
 
-  // Calculate responsive padding based on screen width
   const getResponsivePadding = () => {
     if (width < 375) return 16;
     if (width < 414) return 20;
@@ -32,22 +31,23 @@ export default function TopNavbar() {
       >
         {/* Brand Section */}
         <View style={styles.brandContainer}>
-          <Ionicons name="compass-outline" size={24} color="#2563eb" />
-          <Text style={styles.brandName}>BiteBrowse</Text>
+          <Text style={styles.brandName}>BiteNest</Text>
         </View>
 
         {/* User Section */}
         <View style={styles.userContainer}>
           <Text style={styles.userGreeting}>Hello, John</Text>
-
+          
           <TouchableOpacity
-            onPress={() => navigation.navigate("Profile")} // 👈 navigate to Profile screen
+            onPress={() => navigation.navigate("Profile")}
             activeOpacity={0.7}
+            style={styles.profileButton}
           >
             <Image
               source={{ uri: "https://i.pravatar.cc/150?img=3" }}
               style={styles.profileImage}
             />
+            <View style={styles.onlineIndicator} />
           </TouchableOpacity>
         </View>
       </View>
@@ -59,48 +59,70 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: "#ffffff",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   container: {
-    height: 60,
+    height: 64,
     backgroundColor: "#ffffff",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
+    borderBottomColor: "#f8fafc",
   },
   brandContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
     flex: 1,
+  },
+  iconWrapper: {
+    padding: 6,
+    backgroundColor: "#f0f7ff",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e0f2fe",
   },
   brandName: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "800",
     color: "#1e293b",
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   userContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 14,
     flexShrink: 1,
   },
   userGreeting: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "500",
-    color: "#64748b",
+    color: "#475569",
+    letterSpacing: 0.2,
+  },
+  profileButton: {
+    position: "relative",
   },
   profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 2,
-    borderColor: "#e2e8f0",
+    borderColor: "#f1f5f9",
+  },
+  onlineIndicator: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#10b981",
+    borderWidth: 2,
+    borderColor: "#ffffff",
   },
 });

@@ -16,7 +16,7 @@ export default function AlertsScreen() {
   const getIconName = (type) => {
     switch (type) {
       case "promotion": return "pricetag-outline";
-      case "update": return "restaurant-outline";
+      // case "update": return "restaurant-outline";
       case "favorite": return "heart-outline";
       case "reminder": return "time-outline";
       case "feedback": return "star-outline";
