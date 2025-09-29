@@ -1,0 +1,160 @@
+{
+  "user": {
+    "id": "1",
+    "name": "John Davidson",
+    "email": "john.d@example.com",
+    "avatar": "https://i.pravatar.cc/150?img=3",
+    "joinedDate": "January 2024",
+    "phone": "+1 (555) 123-4567",
+    "location": "New York, USA"
+  },
+  "stats": {
+    "orders": 24,
+    "reviews": 12,
+    "favorites": 8,
+    "points": 1250
+  },
+  "menuItems": [
+    {
+      "id": "1",
+      "icon": "person-outline",
+      "label": "Personal Information",
+      "badge": null,
+      "screen": "PersonalInfo"
+    },
+    {
+      "id": "2",
+      "icon": "card-outline",
+      "label": "Payment Methods",
+      "badge": null,
+      "screen": "PaymentMethods"
+    },
+    {
+      "id": "3",
+      "icon": "receipt-outline",
+      "label": "Order History",
+      "badge": 24,
+      "screen": "OrderHistory"
+    },
+    {
+      "id": "4",
+      "icon": "heart-outline",
+      "label": "Favorites",
+      "badge": 8,
+      "screen": "Favorites"
+    },
+    {
+      "id": "5",
+      "icon": "star-outline",
+      "label": "My Reviews",
+      "badge": 12,
+      "screen": "MyReviews"
+    },
+    {
+      "id": "6",
+      "icon": "notifications-outline",
+      "label": "Notifications",
+      "badge": 3,
+      "screen": "Notifications"
+    },
+    {
+      "id": "7",
+      "icon": "settings-outline",
+      "label": "Settings",
+      "badge": null,
+      "screen": "Settings"
+    },
+    {
+      "id": "8",
+      "icon": "help-circle-outline",
+      "label": "Help & Support",
+      "badge": null,
+      "screen": "HelpSupport"
+    },
+    {
+      "id": "9",
+      "icon": "shield-checkmark-outline",
+      "label": "Privacy Policy",
+      "badge": null,
+      "screen": "PrivacyPolicy"
+    }
+  ],
+  "recentOrders": [
+    {
+      "id": "ORD-001",
+      "date": "2024-01-15",
+      "items": 3,
+      "total": 45.99,
+      "status": "delivered",
+      "restaurant": "Burger Palace"
+    },
+    {
+      "id": "ORD-002",
+      "date": "2024-01-14",
+      "items": 2,
+      "total": 28.50,
+      "status": "delivered",
+      "restaurant": "Pizza Corner"
+    },
+    {
+      "id": "ORD-003",
+      "date": "2024-01-12",
+      "items": 1,
+      "total": 12.99,
+      "status": "cancelled",
+      "restaurant": "Coffee Hub"
+    }
+  ],
+  "favoriteRestaurants": [
+    {
+      "id": "1",
+      "name": "Burger Palace",
+      "cuisine": "American • Burgers",
+      "rating": 4.5,
+      "deliveryTime": "25-35 min",
+      "image": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=150"
+    },
+    {
+      "id": "2",
+      "name": "Pizza Corner",
+      "cuisine": "Italian • Pizza",
+      "rating": 4.3,
+      "deliveryTime": "30-40 min",
+      "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=150"
+    },
+    {
+      "id": "3",
+      "name": "Sushi Garden",
+      "cuisine": "Japanese • Sushi",
+      "rating": 4.7,
+      "deliveryTime": "35-45 min",
+      "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=150"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "1",
+      "title": "Order Delivered",
+      "message": "Your order from Burger Palace has been delivered",
+      "time": "2 hours ago",
+      "read": false,
+      "type": "order"
+    },
+    {
+      "id": "2",
+      "title": "Special Offer",
+      "message": "50% off on all pizzas this weekend",
+      "time": "5 hours ago",
+      "read": false,
+      "type": "promotion"
+    },
+    {
+      "id": "3",
+      "title": "New Restaurant",
+      "message": "Sushi Garden is now available in your area",
+      "time": "1 day ago",
+      "read": true,
+      "type": "info"
+    }
+  ]
+}
