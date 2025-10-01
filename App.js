@@ -12,7 +12,8 @@ import {
   Dimensions, 
   ActivityIndicator, 
   StatusBar,
-  Platform 
+  Platform,
+  Image 
 } from "react-native";
 import SignupScreen from './screens/SignupScreen'
 import { useNavigation } from "@react-navigation/native";
@@ -25,6 +26,7 @@ import CartScreen from "./screens/CartScreen";
 import LoginScreen from "./screens/LoginScreen";
 import { DataProvider } from "./contexts/DataContext";
 import ProfileScreen from "./screens/ProfileScreen";
+import vit from './assets/Vittles_2.jpg';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -206,12 +208,15 @@ const AppContainer = ({ children }) => {
   );
 };
 
-// Loading Component
+// Loading Component with full screen vit image
 const LoadingScreen = () => (
-  <View style={styles.loadingContainer}>
-    <Text style={styles.appLogoText}>BiteNest</Text>
-    <ActivityIndicator size="large" color={COLORS.primary} />
-    <Text style={styles.loadingText}>Loading...</Text>
+  <View style={styles.fullScreenContainer}>
+    <Image 
+      source={vit} 
+      style={styles.fullScreenImage}
+      resizeMode="cover"
+    />
+    
   </View>
 );
 
@@ -240,22 +245,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  loadingContainer: {
+  fullScreenContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  fullScreenImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  loadingOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-  appLogoText: {
-    fontSize: scale(32),
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: verticalScale(20),
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
   loadingText: {
     marginTop: verticalScale(16),
     fontSize: scale(16),
     color: COLORS.textSecondary,
+    fontWeight: '500',
   },
   floatingButton: {
     position: "absolute",

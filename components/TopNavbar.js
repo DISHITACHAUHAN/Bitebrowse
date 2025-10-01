@@ -31,7 +31,7 @@ export default function TopNavbar() {
       >
         {/* Brand Section */}
         <View style={styles.brandContainer}>
-          <Text style={styles.brandName}>BiteNest</Text>
+          <Text style={styles.brandName}>Vittles</Text>
         </View>
 
         {/* User Section */}

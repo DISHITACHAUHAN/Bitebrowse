@@ -144,7 +144,7 @@ export default function LoginScreen({ navigation }) {
           <View style={styles.content}>
             <View style={styles.logoContainer}>
               <Text style={styles.logo}>🍽️</Text>
-              <Text style={styles.appName}>BiteNest</Text>
+              <Text style={styles.appName}>Vittles</Text>
             </View>
 
             <Text style={styles.welcomeTitle}>Welcome Back</Text>

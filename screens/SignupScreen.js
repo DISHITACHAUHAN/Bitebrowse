@@ -106,7 +106,7 @@ const SignupScreen = ({ navigation }) => {
       login(userData);
       
       // Show success message
-      Alert.alert('Welcome to BiteNest!', 'Your account has been created successfully.', [
+      Alert.alert('Welcome to Vittles!', 'Your account has been created successfully.', [
         { 
           text: 'Start Ordering', 
           style: 'default'
@@ -158,7 +158,7 @@ const SignupScreen = ({ navigation }) => {
                 <Text style={styles.logo}>🍕</Text>
               </View>
               <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join BiteNest today</Text>
+              <Text style={styles.subtitle}>Join Vittles today</Text>
             </View>
           </View>
 
