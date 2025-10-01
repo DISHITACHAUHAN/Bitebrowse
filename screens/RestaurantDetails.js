@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   View,
   Text,
@@ -7,469 +7,785 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  Dimensions,
+  StatusBar,
+  Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { useCart } from "../contexts/CartContext";
-import { scale, verticalScale, moderateScale, getDeviceHeightType } from "./HomeScreen";
 
-const RestaurantMenu = () => {
+const RestaurantDetails = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { restaurant } = route.params;
-  const { addItem, removeItem,decrementItem, getItemQuantity, currentRestaurant } = useCart();
-
-  const deviceHeightType = getDeviceHeightType();
+  const { addItem, removeItem, incrementItem, decrementItem, cart } = useCart();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Sample menu data
   const sampleMenuItems = [
     {
       id: "1",
       name: "Butter Chicken",
-      description: "Creamy tomato-based curry with tender chicken.",
-      price: 12.99,
-      image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=300&h=200&fit=crop",
+      description:
+        "Creamy tomato-based curry with tender chicken pieces, cooked in rich spices.",
+      price: "₹250",
+      image:
+        "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400",
       category: "Main Course",
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      isVeg: false,
+      bestseller: true,
     },
     {
       id: "2",
-      name: "Naan Bread",
-      description: "Soft and fluffy Indian flatbread.",
-      price: 3.99,
-      image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&h=200&fit=crop",
-      category: "Sides",
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      name: "Garlic Naan",
+      description:
+        "Soft and fluffy Indian flatbread with fresh garlic and herbs.",
+      price: "₹80",
+      image:
+        "https://images.unsplash.com/photo-1563379091339-03246963d9fb?w=400",
+      category: "Breads",
+      isVeg: true,
     },
     {
       id: "3",
       name: "Vegetable Biryani",
-      description: "Fragrant rice dish with mixed vegetables and spices.",
-      price: 10.99,
-      image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=300&h=200&fit=crop",
+      description:
+        "Fragrant basmati rice cooked with fresh vegetables and aromatic spices.",
+      price: "₹180",
+      image:
+        "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400",
       category: "Main Course",
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      isVeg: true,
+      bestseller: true,
     },
     {
       id: "4",
-      name: "Samosas",
-      description: "Crispy pastries filled with spiced potatoes and peas.",
-      price: 5.99,
-      image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&h=200&fit=crop",
-      category: "Appetizers",
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      name: "Mango Lassi",
+      description: "Refreshing yogurt drink with sweet mango pulp.",
+      price: "₹120",
+      image:
+        "https://images.unsplash.com/photo-1568724001336-2101ca2a0f8e?w=400",
+      category: "Beverages",
+      isVeg: true,
     },
     {
       id: "5",
-      name: "Mango Lassi",
-      description: "Refreshing yogurt-based drink with mango.",
-      price: 4.50,
-      image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=200&fit=crop",
-      category: "Drinks",
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      name: "Paneer Tikka",
+      description: "Grilled cottage cheese cubes marinated in spices.",
+      price: "₹220",
+      image:
+        "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400",
+      category: "Starters",
+      isVeg: true,
+      bestseller: true,
     },
   ];
 
-  // Responsive spacing
-  const getSpacing = () => {
-    switch (deviceHeightType) {
-      case 'small': return verticalScale(6);
-      case 'medium': return verticalScale(8);
-      case 'large': return verticalScale(10);
-      case 'xlarge': return verticalScale(12);
-      default: return verticalScale(8);
-    }
-  };
-
-  // Responsive font sizes
-  const getTitleSize = () => {
-    switch (deviceHeightType) {
-      case 'small': return moderateScale(14);
-      case 'medium': return moderateScale(16);
-      case 'large': return moderateScale(18);
-      case 'xlarge': return moderateScale(20);
-      default: return moderateScale(16);
-    }
-  };
-
-  const getSubtitleSize = () => {
-    switch (deviceHeightType) {
-      case 'small': return moderateScale(10);
-      case 'medium': return moderateScale(12);
-      case 'large': return moderateScale(14);
-      case 'xlarge': return moderateScale(14);
-      default: return moderateScale(12);
-    }
-  };
-
-  const getBodySize = () => {
-    switch (deviceHeightType) {
-      case 'small': return moderateScale(9);
-      case 'medium': return moderateScale(11);
-      case 'large': return moderateScale(12);
-      case 'xlarge': return moderateScale(13);
-      default: return moderateScale(11);
-    }
-  };
-
-  // Handle adding item to cart
-  const handleAddToCart = (item) => {
-    const success = addItem(item, { showAlert: true });
-    if (success) {
-      console.log(`Added ${item.name} to cart`);
-    }
-  };
-
-  // Handle removing item from cart
-  const handleRemoveFromCart = (itemId) => {
-    decrementItem(itemId);
-  };
-
-  // Group menu items by category
+  // Group menu by category
   const groupedMenu = sampleMenuItems.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
+    if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push(item);
     return acc;
   }, {});
 
+  const handleAdd = (item) => {
+    const cartItem = {
+      ...item,
+      restaurantName: restaurant.name,
+      restaurantId: restaurant.id,
+    };
+    addItem(cartItem);
+  };
+
+  const handleQuantityChange = (itemId, delta) => {
+    const existing = cart.find((item) => item.id === itemId);
+    if (existing) {
+      if (delta > 0) {
+        // Increment
+        incrementItem(itemId);
+      } else if (delta < 0) {
+        // Decrement
+        const newQty = existing.quantity - 1;
+        if (newQty === 0) {
+          removeItem(itemId);
+        } else {
+          decrementItem(itemId);
+        }
+      }
+    }
+  };
+
+  // Simplified version - you can also use this approach:
+  const handleIncrement = (itemId) => {
+    incrementItem(itemId);
+  };
+
+  const handleDecrement = (itemId) => {
+    const existing = cart.find((item) => item.id === itemId);
+    if (existing) {
+      if (existing.quantity === 1) {
+        removeItem(itemId);
+      } else {
+        decrementItem(itemId);
+      }
+    }
+  };
+
+  // Animated header background
+  const headerBackgroundOpacity = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
   const renderMenuItem = ({ item }) => {
-    const quantityInCart = getItemQuantity(item.id);
-    
+    const existingItem = cart.find((cItem) => cItem.id === item.id);
+    const quantity = existingItem ? existingItem.quantity : 0;
+
     return (
-      <View style={[styles.menuItem, { 
-        marginBottom: getSpacing(),
-        borderRadius: moderateScale(12),
-        padding: moderateScale(12),
-      }]}>
-        <Image 
-          source={{ uri: item.image }} 
-          style={[styles.menuItemImage, { 
-            width: moderateScale(70),
-            height: moderateScale(70),
-            borderRadius: moderateScale(8),
-            marginRight: moderateScale(10),
-          }]} 
-          resizeMode="cover" 
-        />
-        <View style={[styles.menuItemInfo, { flex: 1 }]}>
-          <Text style={[styles.menuItemName, { fontSize: getSubtitleSize() }]}>
-            {item.name}
-          </Text>
-          {item.description ? (
-            <Text style={[styles.menuItemDescription, { fontSize: getBodySize() }]}>
-              {item.description}
-            </Text>
-          ) : null}
-          <Text style={[styles.menuItemPrice, { fontSize: getSubtitleSize() }]}>
-            ₹{item.price.toFixed(2)}
-          </Text>
-        </View>
-        
-        <View style={styles.quantityControls}>
-          {quantityInCart > 0 ? (
-            <View style={[styles.quantityContainer, {
-              borderRadius: moderateScale(20),
-              padding: moderateScale(2),
-            }]}>
-              <TouchableOpacity 
-                style={[styles.quantityButton, {
-                  borderRadius: moderateScale(16),
-                  width: moderateScale(28),
-                  height: moderateScale(28),
-                }]}
-                onPress={() => handleRemoveFromCart(item.id)}
-              >
-                <Text style={[styles.quantityButtonText, { fontSize: moderateScale(16) }]}>
-                  -
-                </Text>
-              </TouchableOpacity>
-              <Text style={[styles.quantityText, { fontSize: moderateScale(14) }]}>
-                {quantityInCart}
-              </Text>
-              <TouchableOpacity 
-                style={[styles.quantityButton, {
-                  borderRadius: moderateScale(16),
-                  width: moderateScale(28),
-                  height: moderateScale(28),
-                }]}
-                onPress={() => handleAddToCart(item)}
-              >
-                <Text style={[styles.quantityButtonText, { fontSize: moderateScale(16) }]}>
-                  +
-                </Text>
-              </TouchableOpacity>
+      <View style={styles.menuItem}>
+        <View style={styles.menuItemContent}>
+          <View style={styles.menuItemInfo}>
+            {item.bestseller && (
+              <View style={styles.bestsellerTag}>
+                <Ionicons name="trophy" size={12} color="#FFD700" />
+                <Text style={styles.bestsellerText}>Bestseller</Text>
+              </View>
+            )}
+
+            <View style={styles.vegNonVegIndicator}>
+              <View
+                style={[
+                  styles.indicator,
+                  item.isVeg ? styles.vegIndicator : styles.nonVegIndicator,
+                ]}
+              />
             </View>
-          ) : (
-            <TouchableOpacity 
-              style={[styles.addButton, {
-                borderRadius: moderateScale(8),
-                paddingHorizontal: moderateScale(16),
-                paddingVertical: moderateScale(8),
-                minWidth: moderateScale(60),
-              }]}
-              onPress={() => handleAddToCart(item)}
-            >
-              <Text style={[styles.addButtonText, { fontSize: moderateScale(12) }]}>
-                ADD
+
+            <Text style={styles.menuItemName}>{item.name}</Text>
+            <Text style={styles.menuItemPrice}>{item.price}</Text>
+            {item.description ? (
+              <Text style={styles.menuItemDescription}>
+                {item.description}
               </Text>
-            </TouchableOpacity>
-          )}
+            ) : null}
+
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.menuItemImage}
+                resizeMode="cover"
+              />
+            ) : null}
+          </View>
+
+          <View style={styles.menuItemAction}>
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.menuItemImageSmall}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.menuItemImagePlaceholder}>
+                <Ionicons name="fast-food" size={24} color="#999" />
+              </View>
+            )}
+
+            <View style={styles.quantityContainer}>
+              {quantity > 0 ? (
+                <View style={styles.quantityControls}>
+                  <TouchableOpacity
+                    style={styles.quantityButton}
+                    onPress={() => handleDecrement(item.id)}
+                  >
+                    <Ionicons name="remove" size={20} color="#fff" />
+                  </TouchableOpacity>
+                  <Text style={styles.quantityText}>{quantity}</Text>
+                  <TouchableOpacity
+                    style={styles.quantityButton}
+                    onPress={() => handleIncrement(item.id)}
+                  >
+                    <Ionicons name="add" size={20} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => handleAdd(item)}
+                >
+                  <Text style={styles.addButtonText}>ADD</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
         </View>
       </View>
     );
   };
 
   const renderCategory = (category, index) => (
-    <View key={index} style={[styles.categorySection, { marginBottom: verticalScale(20) }]}>
-      <Text style={[styles.categoryTitle, { fontSize: getTitleSize() }]}>
-        {category}
-      </Text>
+    <View key={index} style={styles.categorySection}>
+      <View style={styles.categoryHeader}>
+        <Text style={styles.categoryTitle}>{category}</Text>
+        <Text style={styles.categoryItemCount}>
+          ({groupedMenu[category].length} items)
+        </Text>
+      </View>
       <FlatList
         data={groupedMenu[category]}
         renderItem={renderMenuItem}
         keyExtractor={(item) => item.id}
         scrollEnabled={false}
-        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       />
     </View>
   );
 
-  // Get header image height based on device
-  const getHeaderImageHeight = () => {
-    switch (deviceHeightType) {
-      case 'small': return verticalScale(150);
-      case 'medium': return verticalScale(180);
-      case 'large': return verticalScale(200);
-      case 'xlarge': return verticalScale(220);
-      default: return verticalScale(180);
+  // Calculate cart totals
+  const restaurantCartItems = cart.filter(
+    (item) => item.restaurantId === restaurant.id
+  );
+  const totalItems = restaurantCartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+  const totalAmount = restaurantCartItems.reduce((sum, item) => {
+    const price = parseInt(item.price.replace("₹", "")) || 0;
+    return sum + price * item.quantity;
+  }, 0);
+
+  const renderImage = () => {
+    if (
+      restaurant.image &&
+      typeof restaurant.image === "string" &&
+      !restaurant.image.startsWith("http")
+    ) {
+      return <Text style={styles.emojiImage}>{restaurant.image}</Text>;
     }
+    return (
+      <Image
+        source={{
+          uri:
+            restaurant.image ||
+            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400",
+        }}
+        style={styles.headerImage}
+        resizeMode="cover"
+      />
+    );
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <StatusBar backgroundColor="transparent" translucent />
+
+      {/* Animated Header Background */}
+      <Animated.View
+        style={[styles.animatedHeader, { opacity: headerBackgroundOpacity }]}
+      />
+
+      <Animated.ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewContent}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
       >
         {/* Restaurant Header */}
         <View style={styles.header}>
-          <Image 
-            source={{ uri: restaurant.image }} 
-            style={[styles.headerImage, { 
-              height: getHeaderImageHeight() 
-            }]} 
-            resizeMode="cover" 
-          />
-          <View style={[styles.headerOverlay, { 
-            padding: moderateScale(16),
-            paddingTop: verticalScale(30),
-          }]}>
-            <Text style={[styles.restaurantName, { fontSize: getTitleSize() }]}>
-              {restaurant.name}
-            </Text>
-            <View style={[styles.headerDetails, { marginBottom: verticalScale(6) }]}>
-              <Text style={[styles.restaurantCuisine, { fontSize: getSubtitleSize() }]}>
-                {restaurant.tags?.join(', ') || 'Indian, Asian'}
-              </Text>
-              <Text style={[styles.restaurantPrice, { fontSize: getSubtitleSize() }]}>
-                • {restaurant.deliveryFee || '₹40'}
-              </Text>
-            </View>
-            <View style={styles.deliveryInfo}>
-              <Ionicons name="time-outline" size={moderateScale(12)} color="#fff" />
-              <Text style={[styles.deliveryText, { fontSize: getBodySize() }]}>
-                {restaurant.time || '25-35 min'}
-              </Text>
-              <Text style={[styles.distance, { fontSize: getBodySize() }]}>
-                • {restaurant.distance || '2.5 km'}
-              </Text>
+          {renderImage()}
+          <View style={styles.headerOverlay}>
+
+            <View style={styles.headerContent}>
+              <Text style={styles.restaurantName}>{restaurant.name}</Text>
+
+              <View style={styles.ratingContainer}>
+                <View style={styles.ratingBadge}>
+                  <Ionicons name="star" size={14} color="#fff" />
+                  <Text style={styles.rating}>{restaurant.rating}</Text>
+                </View>
+                <Text style={styles.ratingCount}>
+                  ({restaurant.reviewsCount})
+                </Text>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* Cart Warning Banner */}
-        {currentRestaurant && currentRestaurant !== restaurant.id && (
-          <View style={[styles.warningBanner, {
-            padding: moderateScale(10),
-            marginHorizontal: moderateScale(16),
-            marginTop: verticalScale(12),
-            borderRadius: moderateScale(8),
-          }]}>
-            <Ionicons name="warning-outline" size={moderateScale(14)} color="#fff" />
-            <Text style={[styles.warningText, { fontSize: moderateScale(12) }]}>
-              Your cart contains items from another restaurant
-            </Text>
-          </View>
-        )}
+        {/* Safety Info Banner */}
+        <View style={styles.safetyBanner}>
+          <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
+          <Text style={styles.safetyText}>
+            Follows all safety measures for a safe dining experience
+          </Text>
+        </View>
 
         {/* Menu Sections */}
-        <View style={[styles.menuContainer, { 
-          padding: moderateScale(16),
-          paddingBottom: verticalScale(100), // Extra padding for bottom space
-        }]}>
-          <Text style={[styles.menuTitle, { 
-            fontSize: getTitleSize(),
-            marginBottom: verticalScale(16),
-          }]}>
-            Menu
-          </Text>
-          {Object.keys(groupedMenu).map((category, index) => 
-            renderCategory(category, index)
+        <View style={styles.menuContainer}>
+          <View style={styles.menuHeader}>
+            <Text style={styles.menuTitle}>Menu</Text>
+            {totalItems > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{totalItems}</Text>
+              </View>
+            )}
+          </View>
+
+          {Object.keys(groupedMenu).length > 0 ? (
+            Object.keys(groupedMenu).map((category, index) =>
+              renderCategory(category, index)
+            )
+          ) : (
+            <View style={styles.noMenuContainer}>
+              <Ionicons name="restaurant" size={64} color="#ddd" />
+              <Text style={styles.noMenuText}>Menu items loading...</Text>
+            </View>
           )}
         </View>
-      </ScrollView>
+
+        <View style={styles.spacer} />
+      </Animated.ScrollView>
+
+      {/* Floating Cart Button */}
+      {totalItems > 0 && (
+        <TouchableOpacity
+          style={styles.floatingCart}
+          onPress={() => navigation.navigate("Cart")}
+        >
+          <View style={styles.cartContent}>
+            <View style={styles.cartBadgeFloating}>
+              <Text style={styles.cartBadgeText}>{totalItems}</Text>
+            </View>
+            <View style={styles.cartInfo}>
+              <Text style={styles.cartCount}>
+                View Cart • {totalItems} items
+              </Text>
+              <Text style={styles.cartTotal}>₹{totalAmount}</Text>
+            </View>
+            <View style={styles.viewCartButton}>
+              <Text style={styles.viewCartText}>PROCEED</Text>
+              <Ionicons name="chevron-forward" size={16} color="#fff" />
+            </View>
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
 
+// ... (styles remain the same)
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#fff",
+  },
+  animatedHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    backgroundColor: "#fff",
+    zIndex: 1000,
   },
   scrollView: {
     flex: 1,
   },
-  scrollViewContent: {
-    flexGrow: 1,
-  },
   header: {
     position: "relative",
+    height: 320,
   },
   headerImage: {
     width: "100%",
+    height: "100%",
+  },
+  emojiImage: {
+    width: "100%",
+    height: "100%",
+    fontSize: 100,
+    textAlign: "center",
+    textAlignVertical: "center",
+    backgroundColor: "#f8f8f8",
   },
   headerOverlay: {
     position: "absolute",
-    bottom: 0,
+    top: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    paddingTop: StatusBar.currentHeight,
+  },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  headerContent: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
   },
   restaurantName: {
+    fontSize: 28,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: verticalScale(4),
+    marginBottom: 8,
   },
-  headerDetails: {
+  ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  ratingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4CAF50",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  rating: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 4,
+  },
+  ratingCount: {
+    fontSize: 14,
+    color: "#fff",
+    opacity: 0.9,
   },
   restaurantCuisine: {
+    fontSize: 16,
     color: "#fff",
-    fontWeight: "500",
-  },
-  restaurantPrice: {
-    color: "#fff",
+    marginBottom: 12,
+    opacity: 0.9,
   },
   deliveryInfo: {
     flexDirection: "row",
-    alignItems: "center",
+    marginBottom: 12,
+    flexWrap: "wrap",
   },
-  deliveryText: {
-    color: "#fff",
-    marginLeft: moderateScale(4),
-  },
-  distance: {
-    color: "#fff",
-  },
-  warningBanner: {
-    backgroundColor: "#ff6b35",
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  warningText: {
-    color: '#fff',
-    marginLeft: moderateScale(6),
-    fontWeight: '500',
-    flex: 1,
-  },
-  menuContainer: {
-    // padding handled inline
-  },
-  menuTitle: {
-    fontWeight: "bold",
-    color: "#333",
-  },
-  categorySection: {
-    // marginBottom handled inline
-  },
-  categoryTitle: {
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: verticalScale(8),
-  },
-  menuItem: {
+  infoItem: {
     flexDirection: "row",
-    backgroundColor: "#fff",
+    alignItems: "center",
+    marginRight: 16,
+    marginBottom: 4,
+  },
+  infoText: {
+    fontSize: 14,
+    color: "#fff",
+    marginLeft: 4,
+    opacity: 0.9,
+  },
+  tagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  discountTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 87, 34, 0.9)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  discountText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  vegTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(76, 175, 80, 0.9)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  vegText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  safetyBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F8E9",
+    padding: 12,
+    marginHorizontal: 16,
+    marginTop: -20,
+    borderRadius: 12,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    alignItems: 'center',
   },
-  menuItemInfo: {
+  safetyText: {
+    fontSize: 12,
+    color: "#4CAF50",
+    marginLeft: 8,
+    fontWeight: "500",
+  },
+  menuContainer: {
+    padding: 16,
+    paddingTop: 24,
+  },
+  menuHeader: {
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
-  menuItemName: {
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: verticalScale(2),
-  },
-  menuItemDescription: {
-    color: "#666",
-    marginBottom: verticalScale(4),
-    lineHeight: moderateScale(16),
-  },
-  menuItemPrice: {
+  menuTitle: {
+    fontSize: 22,
     fontWeight: "bold",
     color: "#333",
   },
-  quantityControls: {
-    alignSelf: 'flex-start',
+  cartBadge: {
+    backgroundColor: "#E23E3E",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 24,
+    alignItems: "center",
   },
-  addButton: {
-    backgroundColor: "#ff6b35",
+  cartBadgeText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12,
+  },
+  categorySection: {
+    marginBottom: 32,
+  },
+  categoryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+  },
+  categoryItemCount: {
+    fontSize: 14,
+    color: "#666",
+  },
+  menuItem: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  menuItemContent: {
+    flexDirection: "row",
+    padding: 16,
+  },
+  menuItemInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  bestsellerTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF8E1",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: "flex-start",
+    marginBottom: 8,
+  },
+  bestsellerText: {
+    fontSize: 10,
+    color: "#FF8F00",
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  vegNonVegIndicator: {
+    marginBottom: 8,
+  },
+  indicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  vegIndicator: {
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
+  },
+  nonVegIndicator: {
+    backgroundColor: "#E23E3E",
+    borderColor: "#E23E3E",
+  },
+  menuItemName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  menuItemPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
+  },
+  menuItemDescription: {
+    fontSize: 13,
+    color: "#666",
+    lineHeight: 18,
+  },
+  menuItemImage: {
+    width: "100%",
+    height: 120,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  menuItemAction: {
+    alignItems: "center",
+  },
+  menuItemImageSmall: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  menuItemImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: "#f5f5f5",
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "center",
+  },
+  quantityContainer: {
+    alignItems: "center",
+  },
+  quantityControls: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E23E3E",
+    borderRadius: 20,
+    padding: 4,
+  },
+  quantityButton: {
+    padding: 4,
+  },
+  quantityText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#fff",
+    marginHorizontal: 12,
+    minWidth: 20,
+    textAlign: "center",
+  },
+  addButton: {
+    backgroundColor: "#E23E3E",
+    borderRadius: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
   },
   addButtonText: {
     color: "#fff",
-    fontWeight: "600",
+    fontWeight: "bold",
+    fontSize: 14,
   },
-  quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ff6b35',
-    alignSelf: 'center',
+  noMenuContainer: {
+    alignItems: "center",
+    padding: 40,
   },
-  quantityButton: {
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
+  noMenuText: {
+    textAlign: "center",
+    color: "#666",
+    fontSize: 16,
+    marginTop: 12,
   },
-  quantityButtonText: {
-    color: '#ff6b35',
-    fontWeight: 'bold',
+  spacer: {
+    height: 100,
   },
-  quantityText: {
-    marginHorizontal: moderateScale(8),
-    fontWeight: '600',
-    color: '#fff',
-    minWidth: moderateScale(20),
-    textAlign: 'center',
+  floatingCart: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: "#333",
+    borderRadius: 12,
+    padding: 16,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  cartContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  cartBadgeFloating: {
+    backgroundColor: "#E23E3E",
+    borderRadius: 10,
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  cartInfo: {
+    flex: 1,
+  },
+  cartCount: {
+    fontSize: 14,
+    color: "#fff",
+    opacity: 0.9,
+  },
+  cartTotal: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginTop: 2,
+  },
+  viewCartButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E23E3E",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  viewCartText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 14,
+    marginRight: 4,
   },
 });
 
-export default RestaurantMenu;
+export default RestaurantDetails;

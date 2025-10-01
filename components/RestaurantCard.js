@@ -80,11 +80,7 @@ const RestaurantCard = ({ restaurant }) => {
       <View style={styles.infoContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.restaurantName} numberOfLines={1}>{restaurant.name}</Text>
-          {restaurant.noPackagingCharges && (
-            <View style={styles.freeDeliveryBadge}>
-              <Text style={styles.freeDeliveryText}>Free Delivery</Text>
-            </View>
-          )}
+          
         </View>
         
         {/* <Text style={styles.cuisine} numberOfLines={1}>{restaurant.cuisine}</Text> */}
@@ -109,17 +105,8 @@ const RestaurantCard = ({ restaurant }) => {
           </View>
         </View>
         
-        <View style={styles.footer}>
-          {renderDeliveryChip()}
-          {renderDiscountBadge()}
-        </View>
         
-        {restaurant.freeDelivery && (
-          <View style={styles.offerContainer}>
-            <Ionicons name="flash-outline" size={12} color="#FF6B35" />
-            <Text style={styles.offerText}>Free delivery on orders above ₹199</Text>
-          </View>
-        )}
+        
       </View>
     </TouchableOpacity>
   );

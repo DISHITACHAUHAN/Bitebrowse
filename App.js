@@ -4,7 +4,17 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform, ActivityIndicator, Animated } from "react-native";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  Dimensions, 
+  ActivityIndicator, 
+  StatusBar,
+  Platform 
+} from "react-native";
+import SignupScreen from './screens/SignupScreen'
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CartProvider, useCart } from "./contexts/CartContext";
@@ -14,261 +24,119 @@ import AlertsScreen from "./screens/AlertsScreen";
 import CartScreen from "./screens/CartScreen";
 import LoginScreen from "./screens/LoginScreen";
 import { DataProvider } from "./contexts/DataContext";
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import ProfileScreen from "./screens/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Responsive scaling functions
-const { width, height } = Dimensions.get('window');
-
-// Guideline sizes based on standard ~5.5 inch screen
-const GUIDELINE_WIDTH = 375;
-const GUIDELINE_HEIGHT = 812;
-
-const scale = (size) => (width / GUIDELINE_WIDTH) * size;
-const verticalScale = (size) => (height / GUIDELINE_HEIGHT) * size;
-const moderateScale = (size, factor = 0.5) => size + (scale(size) - size) * factor;
-
-// Device height classification
-const getDeviceHeightType = () => {
-  if (height < 600) return 'small';      // Small phones
-  if (height < 700) return 'medium';     // Medium phones
-  if (height < 800) return 'large';      // Large phones
-  return 'xlarge';                       // Extra large phones/tablets
+// Simple Color Scheme
+const COLORS = {
+  primary: '#00a850',
+  background: '#ffffff',
+  text: '#1a1a1a',
+  textSecondary: '#666666',
+  border: '#e6e6e6',
+  error: '#dc2626',
+  white: '#ffffff',
 };
 
-// Loading Component
-const LoadingScreen = () => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color="#2563eb" />
-    <Text style={styles.loadingText}>Loading...</Text>
-  </View>
-);
+const { width, height } = Dimensions.get('window');
 
-// Enhanced Floating Cart Button Component
+// Responsive scaling
+const scale = (size) => (width / 375) * size;
+const verticalScale = (size) => (height / 812) * size;
+
+// Device detection
+const isTablet = width >= 768;
+
+// Simple Cart Button - FIXED POSITIONING
 const FloatingCartButton = () => {
   const { totalItems } = useCart();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
-  const deviceHeightType = getDeviceHeightType();
-  
-  const getButtonSize = () => {
-    switch (deviceHeightType) {
-      case 'small': return moderateScale(56);
-      case 'medium': return moderateScale(60);
-      case 'large': return moderateScale(64);
-      case 'xlarge': return moderateScale(68);
-      default: return moderateScale(64);
-    }
-  };
+  if (totalItems === 0) return null;
 
+  // Calculate safe position above tab bar
   const getButtonPosition = () => {
-    const buttonSize = getButtonSize();
-    const tabBarHeight = verticalScale(70);
-    const bottomMargin = Platform.OS === 'ios' ? verticalScale(20) : verticalScale(16);
-    const bottomInset = insets.bottom > 0 ? insets.bottom + bottomMargin : tabBarHeight + bottomMargin;
+    const tabBarHeight = isTablet ? 75 : 60;
+    const buttonHeight = isTablet ? 64 : 56;
+    
+    // Position the button well above the tab bar with proper spacing
+    const bottomPosition = insets.bottom + tabBarHeight + 20;
     
     return {
-      bottom: bottomInset,
-      right: Math.max(verticalScale(20), insets.right + verticalScale(10)),
-      size: buttonSize,
+      bottom: bottomPosition,
+      right: isTablet ? 25 : 20,
     };
   };
-
-  const buttonPosition = getButtonPosition();
-  const badgeSize = verticalScale(24);
 
   return (
     <TouchableOpacity
       style={[
         styles.floatingButton,
-        {
-          bottom: buttonPosition.bottom,
-          right: buttonPosition.right,
-          width: buttonPosition.size,
-          height: buttonPosition.size,
-          borderRadius: buttonPosition.size / 2,
-        }
+        getButtonPosition()
       ]}
       onPress={() => navigation.navigate("Cart")}
       activeOpacity={0.8}
     >
-      <LinearGradient
-        colors={['#ff6b35', '#ff8e35', '#ffa235']}
-        style={[styles.floatingButtonGradient, { borderRadius: buttonPosition.size / 2 }]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Ionicons name="cart" size={moderateScale(24)} color="white" />
+      <View style={[
+        styles.cartButton,
+        {
+          width: isTablet ? 64 : 56,
+          height: isTablet ? 64 : 56,
+          borderRadius: isTablet ? 32 : 28,
+        }
+      ]}>
+        <Ionicons name="cart" size={isTablet ? 28 : 24} color="white" />
         {totalItems > 0 && (
-          <View style={[styles.badge, { 
-            minWidth: badgeSize, 
-            height: badgeSize, 
-            borderRadius: badgeSize / 2,
-            top: -verticalScale(2),
-            right: -verticalScale(2),
-          }]}>
-            <Text style={[styles.badgeText, { fontSize: moderateScale(11) }]}>
+          <View style={[
+            styles.badge,
+            {
+              minWidth: isTablet ? 24 : 20,
+              height: isTablet ? 24 : 20,
+              borderRadius: isTablet ? 12 : 10,
+            }
+          ]}>
+            <Text style={styles.badgeText}>
               {totalItems > 99 ? "99+" : totalItems}
             </Text>
           </View>
         )}
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 };
 
-// Custom Tab Bar Component
-const FloatingTabBar = ({ state, descriptors, navigation, insets }) => {
-  const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
-  const deviceHeightType = getDeviceHeightType();
-  
-  const getTabBarHeight = () => {
-    switch (deviceHeightType) {
-      case 'small': return verticalScale(65);
-      case 'medium': return verticalScale(70);
-      case 'large': return verticalScale(75);
-      case 'xlarge': return verticalScale(80);
-      default: return verticalScale(75);
-    }
-  };
-
-  const getTabBarBottom = () => {
-    switch (deviceHeightType) {
-      case 'small': return Math.max(verticalScale(15), insets.bottom + verticalScale(8));
-      case 'medium': return Math.max(verticalScale(18), insets.bottom + verticalScale(10));
-      case 'large': return Math.max(verticalScale(20), insets.bottom + verticalScale(12));
-      case 'xlarge': return Math.max(verticalScale(22), insets.bottom + verticalScale(14));
-      default: return Math.max(verticalScale(20), insets.bottom + verticalScale(10));
-    }
-  };
-
-  const tabBarHeight = getTabBarHeight();
-  const tabBarBottom = getTabBarBottom();
-  const tabWidth = (screenWidth - moderateScale(80)) / state.routes.length;
-
-  return (
-    <View style={[styles.tabBarContainer, { 
-      bottom: tabBarBottom,
-      height: tabBarHeight,
-      borderRadius: moderateScale(25),
-      left: moderateScale(20),
-      right: moderateScale(20),
-    }]}>
-      <BlurView intensity={90} tint="light" style={styles.blurContainer}>
-        <LinearGradient
-          colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.98)']}
-          style={[styles.tabBarGradient, { borderRadius: moderateScale(25) }]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-        >
-          {/* Background Glow Effect */}
-          <View style={[styles.glowEffect, { borderRadius: moderateScale(40) }]} />
-          
-          <View style={[styles.tabBarContent, { paddingHorizontal: moderateScale(10) }]}>
-            {state.routes.map((route, index) => {
-              const { options } = descriptors[route.key];
-              const label = options.tabBarLabel !== undefined
-                ? options.tabBarLabel
-                : options.title !== undefined
-                ? options.title
-                : route.name;
-
-              const isFocused = state.index === index;
-
-              const onPress = () => {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-
-                if (!isFocused && !event.defaultPrevented) {
-                  navigation.navigate(route.name);
-                }
-              };
-
-              const onLongPress = () => {
-                navigation.emit({
-                  type: 'tabLongPress',
-                  target: route.key,
-                });
-              };
-
-              return (
-                <TouchableOpacity
-                  key={route.key}
-                  accessibilityRole="button"
-                  accessibilityState={isFocused ? { selected: true } : {}}
-                  accessibilityLabel={options.tabBarAccessibilityLabel}
-                  testID={options.tabBarTestID}
-                  onPress={onPress}
-                  onLongPress={onLongPress}
-                  style={[
-                    styles.tabItem,
-                    { width: tabWidth },
-                    isFocused && styles.tabItemFocused
-                  ]}
-                  activeOpacity={0.7}
-                >
-                  <Animated.View style={[
-                    styles.tabIconContainer,
-                    { 
-                      width: moderateScale(44),
-                      height: moderateScale(44),
-                      borderRadius: moderateScale(22),
-                    },
-                    isFocused && styles.tabIconContainerFocused
-                  ]}>
-                    {options.tabBarIcon({
-                      focused: isFocused,
-                      color: isFocused ? '#ffffff' : '#64748b',
-                      size: moderateScale(24),
-                    })}
-                  </Animated.View>
-                  
-                  <Animated.Text style={[
-                    styles.tabLabel,
-                    { fontSize: moderateScale(12) },
-                    isFocused && styles.tabLabelFocused
-                  ]}>
-                    {label}
-                  </Animated.Text>
-
-                  {/* Active Indicator */}
-                  {isFocused && (
-                    <View style={styles.activeIndicator}>
-                      <View style={[styles.activeDot, { 
-                        width: moderateScale(4), 
-                        height: moderateScale(4),
-                        borderRadius: moderateScale(2),
-                      }]} />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </LinearGradient>
-      </BlurView>
-    </View>
-  );
-};
-
-// Enhanced Main Tab Navigator
+// Main Tabs with Safe Area
 function MainTabs() {
   const insets = useSafeAreaInsets();
-  const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
-  const { logout } = useAuth();
+  
+  const getTabBarStyle = () => ({
+    backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    height: (isTablet ? 75 : 60) + insets.bottom,
+    paddingBottom: insets.bottom + (isTablet ? 12 : 8),
+    paddingTop: isTablet ? 12 : 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+        borderTopWidth: 0,
+      },
+    }),
+  });
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
       <Tab.Navigator
-        tabBar={(props) => <FloatingTabBar {...props} insets={insets} />}
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
@@ -277,233 +145,151 @@ function MainTabs() {
               iconName = focused ? "home" : "home-outline";
             } else if (route.name === "Alerts") {
               iconName = focused ? "notifications" : "notifications-outline";
+            } else if (route.name === "Account") {
+              iconName = focused ? "person" : "person-outline";
             }
-
-            return <Ionicons name={iconName} size={size} color={color} />;
+            return (
+              <Ionicons 
+                name={iconName} 
+                size={isTablet ? 26 : 22} 
+                color={color} 
+              />
+            );
           },
-          tabBarActiveTintColor: "#ffffff",
-          tabBarInactiveTintColor: "#64748b",
-          gestureEnabled: true,
-          animation: 'shift',
-          tabBarHideOnKeyboard: true,
+          tabBarActiveTintColor: COLORS.primary,
+          tabBarInactiveTintColor: COLORS.textSecondary,
+          tabBarStyle: getTabBarStyle(),
+          tabBarLabelStyle: {
+            fontSize: isTablet ? 12 : 10,
+            marginBottom: 2,
+            fontWeight: '500',
+          },
         })}
       >
-        <Tab.Screen 
-          name="Home" 
-          component={HomeStack}
-          options={{
-            tabBarLabel: "Home",
-          }}
-        />
-        <Tab.Screen 
-          name="Alerts" 
-          component={AlertsScreen}
-          options={{
-            tabBarLabel: "Alerts",
-          }}
-        />
+        <Tab.Screen name="Home" component={HomeStack} />
+        <Tab.Screen name="Alerts" component={AlertsScreen} />
+        <Tab.Screen name="Account" component={ProfileScreen} />
       </Tab.Navigator>
-
-      <FloatingCartButton />
+      
+      {/* Floating cart button */}
+      {/* <FloatingCartButton /> */}
     </View>
   );
 }
 
-// Root Navigator to handle authentication flow
+// Rest of the code remains the same...
 function RootNavigator() {
   const { user, isLoading } = useAuth();
 
-  // Show loading screen while checking authentication state
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-    <Stack.Navigator 
-      screenOptions={{ 
-        headerShown: false,
-        gestureEnabled: true,
-        animation: Platform.OS === 'ios' ? 'default' : 'slide_from_right',
-        fullScreenGestureEnabled: true,
-      }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
-        <Stack.Screen 
-          name="MainTabs" 
-          component={MainTabs}
-          options={{
-            gestureEnabled: false,
-          }}
-        />
+        <Stack.Screen name="MainTabs" component={MainTabs} />
       ) : (
-        <Stack.Screen 
-          name="Login" 
-          component={LoginScreen}
-          options={{
-            gestureEnabled: false,
-          }}
-        />
+        <Stack.Screen name="Login" component={LoginScreen} />
       )}
-      <Stack.Screen 
-        name="Cart" 
-        component={CartScreen}
-        options={{
-          presentation: 'modal',
-          gestureEnabled: true,
-          animation: 'slide_from_bottom',
-        }}
-      />
+      <Stack.Screen name="Signup" component={SignupScreen} />
+      <Stack.Screen name="Cart" component={CartScreen} />
     </Stack.Navigator>
   );
 }
 
+const AppContainer = ({ children }) => {
+  return (
+    <View style={styles.appContainer}>
+      {children}
+    </View>
+  );
+};
+
+// Loading Component
+const LoadingScreen = () => (
+  <View style={styles.loadingContainer}>
+    <Text style={styles.appLogoText}>BiteNest</Text>
+    <ActivityIndicator size="large" color={COLORS.primary} />
+    <Text style={styles.loadingText}>Loading...</Text>
+  </View>
+);
+
 export default function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <CartProvider>
-          <NavigationContainer>
-            <RootNavigator />
-          </NavigationContainer>
-        </CartProvider>
-      </DataProvider>
-    </AuthProvider>
+    <AppContainer>
+      <AuthProvider>
+        <DataProvider>
+          <CartProvider>
+            <NavigationContainer>
+              <RootNavigator />
+            </NavigationContainer>
+          </CartProvider>
+        </DataProvider>
+      </AuthProvider>
+    </AppContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  appContainer: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   container: {
     flex: 1,
-    position: 'relative',
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.background,
+  },
+  appLogoText: {
+    fontSize: scale(32),
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    marginBottom: verticalScale(20),
   },
   loadingText: {
-    marginTop: verticalScale(10),
-    fontSize: moderateScale(16),
-    color: '#64748b',
+    marginTop: verticalScale(16),
+    fontSize: scale(16),
+    color: COLORS.textSecondary,
   },
-  // Floating Tab Bar Styles
-  tabBarContainer: {
-    position: 'absolute',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: verticalScale(10),
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: verticalScale(20),
-    elevation: 15,
-    overflow: 'hidden',
-    zIndex: 1000,
-  },
-  blurContainer: {
-    flex: 1,
-    borderRadius: moderateScale(25),
-    overflow: 'hidden',
-  },
-  tabBarGradient: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  glowEffect: {
-    position: 'absolute',
-    top: verticalScale(-20),
-    left: verticalScale(-20),
-    right: verticalScale(-20),
-    height: verticalScale(60),
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    filter: 'blur(20px)',
-  },
-  tabBarContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: verticalScale(12),
-    borderRadius: moderateScale(20),
-    marginHorizontal: moderateScale(4),
-    position: 'relative',
-  },
-  tabItemFocused: {
-    transform: [{ translateY: verticalScale(-5) }],
-  },
-  tabIconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: verticalScale(4),
-    backgroundColor: 'transparent',
-  },
-  tabIconContainerFocused: {
-    backgroundColor: '#2563eb',
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: verticalScale(8) },
-    shadowOpacity: 0.3,
-    shadowRadius: verticalScale(12),
-    elevation: 8,
-  },
-  tabLabel: {
-    fontWeight: '600',
-    color: '#64748b',
-    letterSpacing: 0.3,
-  },
-  tabLabelFocused: {
-    color: '#2563eb',
-    fontWeight: '700',
-  },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: verticalScale(8),
-    alignItems: 'center',
-  },
-  activeDot: {
-    backgroundColor: '#2563eb',
-  },
-  // Enhanced Floating Cart Button
   floatingButton: {
     position: "absolute",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 12,
-    zIndex: 1001,
-    shadowColor: "#ff6b35",
-    shadowOffset: { width: 0, height: verticalScale(8) },
-    shadowOpacity: 0.4,
-    shadowRadius: verticalScale(16),
+    zIndex: 1000,
   },
-  floatingButtonGradient: {
-    width: '100%',
-    height: '100%',
-    justifyContent: "center",
-    alignItems: "center",
+  cartButton: {
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   badge: {
     position: "absolute",
-    backgroundColor: "#ef4444",
+    backgroundColor: COLORS.error,
     justifyContent: "center",
     alignItems: "center",
+    top: 0,
+    right: 0,
     borderWidth: 2,
-    borderColor: "white",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: verticalScale(2) },
-    shadowOpacity: 0.2,
-    shadowRadius: verticalScale(4),
-    elevation: 4,
+    borderColor: COLORS.white,
   },
   badgeText: {
-    color: "white",
+    color: COLORS.white,
+    fontSize: 10,
     fontWeight: "bold",
   },
 });
-
-// Export scaling functions for use in other components
-export { scale, verticalScale, moderateScale, getDeviceHeightType };

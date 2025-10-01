@@ -139,7 +139,7 @@ const HomeStack = () => {
         component={CartScreen} 
         options={{
           title: 'Your Cart',
-          // headerShown:false,
+          headerShown:false,
           headerLeft: () => <CustomBackButton />,
           presentation: 'modal', // Makes it feel like a modal on iOS
         }} 
@@ -149,8 +149,10 @@ const HomeStack = () => {
       <Stack.Screen 
         name="Checkout" 
         component={CheckoutScreen} 
+
         options={{
           title: 'Checkout',
+          headerShown: false,
           headerLeft: () => <CustomBackButton />,
           headerRight: () => <CartIcon />,
         }} 
@@ -161,7 +163,8 @@ const HomeStack = () => {
         name="Profile" 
         component={ProfileScreen} 
         options={{
-          title: 'My Profile',
+          // title: 'My Profile',
+          headerShown:false,
           headerLeft: () => <CustomBackButton />,
           headerRight: () => <CartIcon />,
         }} 

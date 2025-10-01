@@ -11,6 +11,7 @@ import {
   Alert,
   ImageBackground,
   Dimensions,
+  StyleSheet
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
@@ -54,17 +55,23 @@ export default function LoginScreen({ navigation }) {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
+      console.log("Attempting login with:", email);
+      
       // Login with proper user object structure
-      login({ 
+      const userData = { 
         id: Date.now().toString(),
-        email,
-        name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1), // Capitalized name from email
+        email: email,
+        name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
         avatar: `https://i.pravatar.cc/150?u=${email}`,
         isGuest: false,
         joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-      });
+      };
+      
+      console.log("Calling login function with:", userData);
+      login(userData);
       
     } catch (err) {
+      console.error("Login error:", err);
       setError("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -72,15 +79,18 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleGuestLogin = () => {
-    // Create proper guest user object
-    login({ 
+    console.log("Guest login attempted");
+    const guestUser = { 
       id: 'guest-' + Date.now(),
       name: 'Guest User',
       email: 'guest@example.com',
       avatar: 'https://i.pravatar.cc/150?img=45',
       isGuest: true,
       joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    });
+    };
+    
+    console.log("Calling login function with guest:", guestUser);
+    login(guestUser);
   };
 
   const togglePasswordVisibility = () => {
@@ -88,11 +98,7 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleSignUp = () => {
-    Alert.alert(
-      "Coming Soon", 
-      "Sign up feature will be available soon!",
-      [{ text: "OK" }]
-    );
+    navigation.navigate("Signup");
   };
 
   const handleForgotPassword = () => {
@@ -105,8 +111,8 @@ export default function LoginScreen({ navigation }) {
 
   // Demo credentials quick fill
   const fillDemoCredentials = () => {
-    setEmail("user@example.com");
-    setPassword("password");
+    setEmail("demo@example.com");
+    setPassword("123456");
     setError("");
   };
 
@@ -128,9 +134,9 @@ export default function LoginScreen({ navigation }) {
           {/* Header with Weather */}
           <View style={styles.header}>
             <View style={styles.weatherContainer}>
-              <Ionicons name="partly-sunny" size={20} color="#1F2937" />
+              <Ionicons name="partly-sunny" size={18} color="#1F2937" />
               <Text style={styles.weather}>33°C</Text>
-              <Text style={styles.weatherText}>Partly cloudy</Text>
+              <Text style={styles.weatherText}>Sunny</Text>
             </View>
           </View>
 
@@ -138,7 +144,7 @@ export default function LoginScreen({ navigation }) {
           <View style={styles.content}>
             <View style={styles.logoContainer}>
               <Text style={styles.logo}>🍽️</Text>
-              <Text style={styles.appName}>FoodExpress</Text>
+              <Text style={styles.appName}>BiteNest</Text>
             </View>
 
             <Text style={styles.welcomeTitle}>Welcome Back</Text>
@@ -146,15 +152,7 @@ export default function LoginScreen({ navigation }) {
               Sign in to continue your culinary journey
             </Text>
 
-            {/* Demo Credentials Quick Fill */}
-            <TouchableOpacity 
-              style={styles.demoButton} 
-              onPress={fillDemoCredentials}
-              disabled={isLoading}
-            >
-              <Text style={styles.demoButtonText}>Try Demo Credentials</Text>
-            </TouchableOpacity>
-
+            
             {/* Form Section */}
             <View style={styles.form}>
               {error ? (
@@ -169,7 +167,7 @@ export default function LoginScreen({ navigation }) {
                 <Ionicons name="mail-outline" size={20} color="#6B7280" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="you.amad@example.com"
+                  placeholder="your.email@example.com"
                   placeholderTextColor="#A1A1AA"
                   value={email}
                   onChangeText={setEmail}
@@ -185,7 +183,7 @@ export default function LoginScreen({ navigation }) {
                 <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, styles.passwordInput]}
-                  placeholder="··········"
+                  placeholder="••••••••"
                   placeholderTextColor="#A1A1AA"
                   value={password}
                   onChangeText={setPassword}
@@ -268,7 +266,7 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   background: {
     flex: 1,
     width: '100%',
@@ -279,172 +277,172 @@ const styles = {
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20, // Reduced from 24
     minHeight: height,
   },
   header: {
     alignItems: 'flex-end',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30, // Reduced padding
+    paddingBottom: 10, // Reduced padding
   },
   weatherContainer: {
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 10, // Reduced padding
+    paddingVertical: 6, // Reduced padding
+    borderRadius: 16,
     flexDirection: 'row',
-    gap: 6,
+    gap: 4, // Reduced gap
   },
   weather: {
-    fontSize: 16,
+    fontSize: 14, // Smaller font
     fontWeight: '600',
     color: '#1F2937',
   },
   weatherText: {
-    fontSize: 12,
+    fontSize: 11, // Smaller font
     color: '#6B7280',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    marginTop: height * 0.05,
+    marginTop: height * 0.02, // Reduced margin
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20, // Reduced margin
   },
   logo: {
-    fontSize: 48,
-    marginBottom: 8,
+    fontSize: 42, // Slightly smaller
+    marginBottom: 6, // Reduced margin
   },
   appName: {
-    fontSize: 28,
+    fontSize: 24, // Smaller font
     fontWeight: '700',
     color: '#1F2937',
     letterSpacing: -0.5,
   },
   welcomeTitle: {
-    fontSize: 32,
+    fontSize: 28, // Smaller font
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 8,
+    marginBottom: 6, // Reduced margin
     textAlign: 'center',
   },
   welcomeSubtitle: {
-    fontSize: 16,
+    fontSize: 14, // Smaller font
     color: '#6B7280',
-    marginBottom: 32,
+    marginBottom: 24, // Reduced margin
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20, // Reduced line height
+    paddingHorizontal: 10, // Added padding to prevent text overflow
   },
   demoButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    paddingVertical: 10, // Reduced padding
+    paddingHorizontal: 14, // Reduced padding
+    borderRadius: 10, // Smaller border radius
+    marginBottom: 20, // Reduced margin
     borderWidth: 1,
     borderColor: '#E5E7EB',
     alignSelf: 'center',
   },
   demoButtonText: {
     color: '#FF6B6B',
-    fontSize: 14,
+    fontSize: 13, // Smaller font
     fontWeight: '600',
     textAlign: 'center',
   },
   form: {
     width: '100%',
-    maxWidth: 400,
     alignSelf: 'center',
   },
   errorBox: {
     backgroundColor: '#FEF2F2',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    padding: 12, // Reduced padding
+    borderRadius: 10, // Smaller border radius
+    marginBottom: 20, // Reduced margin
     borderWidth: 1,
     borderColor: '#FECACA',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6, // Reduced gap
   },
   errorText: {
     color: '#DC2626',
-    fontSize: 14,
+    fontSize: 13, // Smaller font
     fontWeight: '500',
     flex: 1,
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: 12, // Reduced margin
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14, // Smaller border radius
     borderWidth: 2,
     borderColor: '#F3F4F6',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 }, // Reduced shadow
+    shadowOpacity: 0.04, // Reduced opacity
+    shadowRadius: 4, // Reduced radius
+    elevation: 1, // Reduced elevation
   },
   inputIcon: {
-    marginLeft: 16,
+    marginLeft: 14, // Reduced margin
   },
   input: {
     flex: 1,
-    height: 56,
-    paddingHorizontal: 12,
-    fontSize: 16,
+    height: 52, // Reduced height
+    paddingHorizontal: 10, // Reduced padding
+    fontSize: 15, // Smaller font
     color: '#1F2937',
   },
   passwordInput: {
-    paddingRight: 50,
+    paddingRight: 46, // Adjusted for smaller eye button
   },
   eyeButton: {
     position: 'absolute',
-    right: 16,
-    padding: 8,
+    right: 12, // Reduced padding
+    padding: 6, // Reduced padding
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginBottom: 20, // Reduced margin
   },
   forgotPasswordText: {
     color: '#FF6B6B',
-    fontSize: 14,
+    fontSize: 13, // Smaller font
     fontWeight: '600',
   },
   loginButton: {
-    height: 56,
+    height: 52, // Reduced height
     backgroundColor: '#FF6B6B',
-    borderRadius: 16,
+    borderRadius: 14, // Smaller border radius
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12, // Reduced margin
     shadowColor: '#FF6B6B',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 }, // Reduced shadow
+    shadowOpacity: 0.25, // Reduced opacity
+    shadowRadius: 12, // Reduced radius
+    elevation: 6, // Reduced elevation
     flexDirection: 'row',
-    gap: 8,
+    gap: 6, // Reduced gap
   },
   loginButtonDisabled: {
     opacity: 0.7,
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 16, // Smaller font
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3, // Reduced letter spacing
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
+    marginVertical: 20, // Reduced margin
   },
   dividerLine: {
     flex: 1,
@@ -452,26 +450,26 @@ const styles = {
     backgroundColor: '#E5E7EB',
   },
   dividerText: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12, // Reduced padding
     color: '#6B7280',
-    fontSize: 14,
+    fontSize: 13, // Smaller font
     fontWeight: '500',
   },
   guestButton: {
-    height: 56,
+    height: 52, // Reduced height
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14, // Smaller border radius
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20, // Reduced margin
     borderWidth: 2,
     borderColor: '#F3F4F6',
     flexDirection: 'row',
-    gap: 8,
+    gap: 6, // Reduced gap
   },
   guestButtonText: {
     color: '#6B7280',
-    fontSize: 16,
+    fontSize: 15, // Smaller font
     fontWeight: '600',
   },
   signupContainer: {
@@ -482,14 +480,14 @@ const styles = {
   },
   signupText: {
     color: '#6B7280',
-    fontSize: 15,
+    fontSize: 14, // Smaller font
   },
   signupLink: {
     color: '#FF6B6B',
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 14, // Smaller font
   },
   disabledText: {
     opacity: 0.5,
   },
-};
+});
