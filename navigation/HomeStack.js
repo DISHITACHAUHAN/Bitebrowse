@@ -2,10 +2,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
+// import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../contexts/CartContext';
-
+import { TouchableOpacity, View, Text } from 'react-native';
 // Screens
 import HomeScreen from '../screens/HomeScreen';
 import RestaurantDetails from '../screens/RestaurantDetails';
@@ -99,6 +99,7 @@ const HomeStack = () => {
           headerShown: false,
         }} 
       />
+      
 
       {/* Search Screen */}
       <Stack.Screen 
@@ -138,6 +139,7 @@ const HomeStack = () => {
         component={CartScreen} 
         options={{
           title: 'Your Cart',
+          // headerShown:false,
           headerLeft: () => <CustomBackButton />,
           presentation: 'modal', // Makes it feel like a modal on iOS
         }} 

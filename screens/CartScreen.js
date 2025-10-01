@@ -7,15 +7,37 @@ import {
   StyleSheet,
   Alert,
   Image,
-  ScrollView,
-  Animated,
+  Dimensions,
+  StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../contexts/CartContext';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import CartStack from '../navigation/CartStack';
+
+const { width, height } = Dimensions.get('window');
+
+// Responsive scaling functions
+const GUIDELINE_WIDTH = 375;
+const GUIDELINE_HEIGHT = 812;
+
+const scale = (size) => (width / GUIDELINE_WIDTH) * size;
+const verticalScale = (size) => (height / GUIDELINE_HEIGHT) * size;
+const moderateScale = (size, factor = 0.5) => size + (scale(size) - size) * factor;
+
+// Device height classification
+const getDeviceHeightType = () => {
+  if (height < 600) return 'small';
+  if (height < 700) return 'medium';
+  if (height < 800) return 'large';
+  return 'xlarge';
+};
 
 const CartScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { 
     cart, 
     removeItem, 
@@ -35,6 +57,54 @@ const CartScreen = () => {
   } = useCart();
 
   const [isClearing, setIsClearing] = useState(false);
+  const deviceHeightType = getDeviceHeightType();
+
+  // Calculate bottom padding to avoid navbar overlap
+  const getBottomPadding = () => {
+    const baseTabBarHeight = verticalScale(80);
+    const floatingButtonHeight = verticalScale(64);
+    const safeAreaBottom = insets.bottom;
+    
+    return baseTabBarHeight + floatingButtonHeight + safeAreaBottom + verticalScale(30);
+  };
+
+  // Responsive spacing
+  const getSpacing = () => {
+    switch (deviceHeightType) {
+      case 'small': return verticalScale(6);
+      case 'medium': return verticalScale(8);
+      case 'large': return verticalScale(10);
+      case 'xlarge': return verticalScale(12);
+      default: return verticalScale(8);
+    }
+  };
+
+  // Responsive font sizes
+  const getTitleSize = () => {
+    switch (deviceHeightType) {
+      case 'small': return moderateScale(16);
+      case 'medium': return moderateScale(17);
+      case 'large': return moderateScale(18);
+      case 'xlarge': return moderateScale(19);
+      default: return moderateScale(17);
+    }
+  };
+
+  // Helper function to extract price as number
+  const getPriceAsNumber = (price) => {
+    if (typeof price === 'number') return price;
+    if (typeof price === 'string') {
+      return parseFloat(price.replace(/[₹$,]/g, ''));
+    }
+    return 0;
+  };
+
+  // Helper function to format price display
+  const formatPriceDisplay = (price) => {
+    if (typeof price === 'number') return `₹${price.toFixed(2)}`;
+    if (typeof price === 'string') return price;
+    return '₹0.00';
+  };
 
   const handleClearCart = () => {
     Alert.alert(
@@ -55,146 +125,242 @@ const CartScreen = () => {
     );
   };
 
-  const renderCartItem = ({ item, index }) => (
-    <Animated.View 
-      style={[
-        styles.cartItem,
-        {
-          opacity: 1,
-          transform: [{ translateY: 0 }]
-        }
-      ]}
-    >
-      <View style={styles.cartItemContent}>
-        {item.image ? (
-          <Image source={{ uri: item.image }} style={styles.cartItemImage} />
-        ) : (
-          <View style={styles.cartItemImagePlaceholder}>
-            <Ionicons name="fast-food" size={24} color="#999" />
+  const renderCartItem = ({ item, index }) => {
+    const itemPrice = getPriceAsNumber(item.price);
+    const itemTotal = itemPrice * item.quantity;
+
+    return (
+      <View style={[styles.cartItem, { 
+        padding: moderateScale(14),
+        borderRadius: moderateScale(12),
+        marginBottom: verticalScale(10),
+      }]}>
+        <View style={styles.cartItemContent}>
+          {item.image ? (
+            <Image 
+              source={{ uri: item.image }} 
+              style={[styles.cartItemImage, { 
+                width: moderateScale(70),
+                height: moderateScale(70),
+                borderRadius: moderateScale(8),
+              }]} 
+            />
+          ) : (
+            <View style={[styles.cartItemImagePlaceholder, {
+              width: moderateScale(70),
+              height: moderateScale(70),
+              borderRadius: moderateScale(8),
+            }]}>
+              <Ionicons name="fast-food" size={moderateScale(20)} color="#999" />
+            </View>
+          )}
+          
+          <View style={[styles.cartItemDetails, { marginLeft: moderateScale(12) }]}>
+            <View style={styles.itemHeader}>
+              <Text style={[styles.cartItemName, { fontSize: moderateScale(15) }]} numberOfLines={1}>
+                {item.name}
+              </Text>
+              <TouchableOpacity 
+                onPress={() => removeItem(item.id)} 
+                style={styles.removeButton}
+              >
+                <Ionicons name="close" size={moderateScale(18)} color="#999" />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={[styles.cartItemRestaurant, { fontSize: moderateScale(12) }]} numberOfLines={1}>
+              {item.restaurantName}
+            </Text>
+            
+            <Text style={[styles.cartItemDescription, { fontSize: moderateScale(11) }]} numberOfLines={2}>
+              {item.description || "Delicious food item"}
+            </Text>
+            
+            <View style={styles.priceContainer}>
+              <Text style={[styles.cartItemPrice, { fontSize: moderateScale(14) }]}>
+                {formatPriceDisplay(item.price)}
+              </Text>
+              <Text style={[styles.itemTotal, { fontSize: moderateScale(14) }]}>
+                ₹{itemTotal.toFixed(2)}
+              </Text>
+            </View>
           </View>
-        )}
-        
-        <View style={styles.cartItemDetails}>
-          <View style={styles.itemHeader}>
-            <Text style={styles.cartItemName} numberOfLines={1}>{item.name}</Text>
-            <TouchableOpacity 
-              onPress={() => removeItem(item.id)} 
-              style={styles.removeButton}
-            >
-              <Ionicons name="close" size={20} color="#999" />
-            </TouchableOpacity>
-          </View>
+        </View>
+
+        <View style={[styles.quantityContainer, {
+          borderRadius: moderateScale(20),
+          padding: moderateScale(2),
+        }]}>
+          <TouchableOpacity 
+            style={[
+              styles.quantityButton, 
+              { 
+                borderRadius: moderateScale(15),
+                minWidth: moderateScale(30),
+              },
+              item.quantity <= 1 && styles.quantityButtonDisabled
+            ]}
+            onPress={() => decrementItem(item.id)}
+            disabled={item.quantity <= 1}
+          >
+            <Ionicons 
+              name="remove" 
+              size={moderateScale(16)} 
+              color={item.quantity <= 1 ? "#ccc" : "#ff6b35"} 
+            />
+          </TouchableOpacity>
           
-          <Text style={styles.cartItemRestaurant} numberOfLines={1}>
-            {item.restaurantName}
-          </Text>
-          
-          <Text style={styles.cartItemDescription} numberOfLines={2}>
-            {item.description || "Delicious food item"}
-          </Text>
-          
-          <View style={styles.priceContainer}>
-            <Text style={styles.cartItemPrice}>{item.price}</Text>
-            <Text style={styles.itemTotal}>
-              ₹{(parseInt(item.price.replace('₹', '')) * item.quantity).toFixed(2)}
+          <View style={[styles.quantityDisplay, { minWidth: moderateScale(35) }]}>
+            <Text style={[styles.quantityText, { fontSize: moderateScale(15) }]}>
+              {item.quantity}
             </Text>
           </View>
+          
+          <TouchableOpacity 
+            style={[
+              styles.quantityButton,
+              { 
+                borderRadius: moderateScale(15),
+                minWidth: moderateScale(30),
+              }
+            ]}
+            onPress={() => incrementItem(item.id)}
+          >
+            <Ionicons name="add" size={moderateScale(16)} color="#ff6b35" />
+          </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.quantityContainer}>
-        <TouchableOpacity 
-          style={styles.quantityButton}
-          onPress={() => decrementItem(item.id)}
-          disabled={item.quantity <= 1}
-        >
-          <Ionicons 
-            name="remove" 
-            size={20} 
-            color={item.quantity <= 1 ? "#ccc" : "#ff6b35"} 
-          />
-        </TouchableOpacity>
-        
-        <View style={styles.quantityDisplay}>
-          <Text style={styles.quantityText}>{item.quantity}</Text>
-        </View>
-        
-        <TouchableOpacity 
-          style={styles.quantityButton}
-          onPress={() => incrementItem(item.id)}
-        >
-          <Ionicons name="add" size={20} color="#ff6b35" />
-        </TouchableOpacity>
-      </View>
-    </Animated.View>
-  );
+    );
+  };
 
   const handleCheckout = () => {
+    console.log('Checkout button pressed');
+    console.log('Total items:', totalItems);
+    console.log('Cart items:', cart.length);
+    console.log('Current restaurant:', currentRestaurant);
+    
     if (totalItems === 0) {
       Alert.alert('Cart Empty', 'Add some delicious items to checkout!');
       return;
     }
     
-    navigation.navigate('Checkout', {
-      cartItems: cart,
-      restaurantId: currentRestaurant,
-      subtotal: subtotal,
-      deliveryFee: deliveryFee,
-      tax: tax,
-      grandTotal: total
-    });
+    console.log('Navigating to Checkout screen...');
+    
+    try {
+      navigation.navigate('Checkout', {
+        cartItems: cart,
+        restaurantId: currentRestaurant,
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
+        tax: tax,
+        grandTotal: total
+      });
+      console.log('Navigation successful');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      Alert.alert('Error', 'Unable to navigate to checkout. Please try again.');
+    }
   };
 
   const handleContinueShopping = () => {
     if (currentRestaurant) {
-      // Go back to the current restaurant
       navigation.goBack();
     } else {
-      // Go to home screen
-      navigation.navigate('Home');
+      navigation.popToTop();
     }
   };
 
   if (totalItems === 0) {
+    const getEmptyIconSize = () => {
+      switch (deviceHeightType) {
+        case 'small': return moderateScale(70);
+        case 'medium': return moderateScale(80);
+        case 'large': return moderateScale(90);
+        case 'xlarge': return moderateScale(100);
+        default: return moderateScale(80);
+      }
+    };
+
     return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.emptyIllustration}>
-          <Ionicons name="cart-outline" size={120} color="#e0e0e0" />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.emptyContainer, { paddingBottom: getBottomPadding() }]}>
+          <View style={styles.emptyIllustration}>
+            <Ionicons 
+              name="cart-outline" 
+              size={getEmptyIconSize()} 
+              color="#e0e0e0" 
+            />
+          </View>
+          <Text style={[styles.emptyTitle, { fontSize: getTitleSize() }]}>
+            Your cart feels lonely
+          </Text>
+          <Text style={[styles.emptySubtitle, { fontSize: moderateScale(14) }]}>
+            Add some delicious food from our restaurants
+          </Text>
+          <TouchableOpacity 
+            style={[styles.shoppingButton, {
+              paddingVertical: verticalScale(14),
+              paddingHorizontal: moderateScale(24),
+              borderRadius: moderateScale(12),
+            }]}
+            onPress={handleContinueShopping}
+          >
+            <Ionicons name="restaurant" size={moderateScale(18)} color="#fff" />
+            <Text style={[styles.shoppingButtonText, { fontSize: moderateScale(15) }]}>
+              Start Ordering
+            </Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.emptyTitle}>Your cart feels lonely</Text>
-        <Text style={styles.emptySubtitle}>
-          Add some delicious food from our restaurants
-        </Text>
-        <TouchableOpacity 
-          style={styles.shoppingButton}
-          onPress={handleContinueShopping}
-        >
-          <Ionicons name="restaurant" size={20} color="#fff" />
-          <Text style={styles.shoppingButtonText}>Start Ordering</Text>
-        </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+      
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, {
+        paddingTop: verticalScale(16),
+        paddingBottom: verticalScale(12),
+      }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={moderateScale(24)} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Cart</Text>
+        
+        <Text style={[styles.headerTitle, { fontSize: getTitleSize() }]}>
+          My Cart ({totalItems})
+        </Text>
+        
         <TouchableOpacity 
           style={styles.clearButton}
           onPress={handleClearCart}
           disabled={isClearing}
         >
-          <Ionicons name="trash-outline" size={20} color="#ff4444" />
+          <Ionicons 
+            name="trash-outline" 
+            size={moderateScale(20)} 
+            color={isClearing ? "#ccc" : "#ff4444"} 
+          />
         </TouchableOpacity>
       </View>
+
+      {/* Restaurant Info */}
+      {cart.length > 0 && (
+        <View style={[styles.restaurantHeader, {
+          padding: moderateScale(12),
+          borderRadius: moderateScale(10),
+          marginTop: verticalScale(12),
+        }]}>
+          <Ionicons name="restaurant" size={moderateScale(16)} color="#666" />
+          <Text style={[styles.restaurantName, { fontSize: moderateScale(13) }]} numberOfLines={1}>
+            Ordering from: {cart[0]?.restaurantName || 'Restaurant'}
+          </Text>
+        </View>
+      )}
 
       {/* Cart Items */}
       <FlatList
@@ -202,63 +368,90 @@ const CartScreen = () => {
         renderItem={renderCartItem}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <View style={styles.restaurantHeader}>
-            <Ionicons name="restaurant" size={16} color="#666" />
-            <Text style={styles.restaurantName} numberOfLines={1}>
-              Ordering from: {cart[0]?.restaurantName || 'Restaurant'}
-            </Text>
-          </View>
-        }
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: getBottomPadding() }
+        ]}
+        style={styles.list}
       />
 
       {/* Order Summary */}
-      <View style={styles.footer}>
-        <View style={styles.summaryContainer}>
-          <Text style={styles.summaryTitle}>Order Summary</Text>
+      <View style={[styles.footer, {
+        padding: moderateScale(16),
+      }]}>
+        <View style={[styles.summaryContainer, { marginBottom: verticalScale(16) }]}>
+          <Text style={[styles.summaryTitle, { fontSize: moderateScale(17) }]}>
+            Order Summary
+          </Text>
           
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Subtotal ({totalItems} items)</Text>
-            <Text style={styles.summaryValue}>{formattedSubtotal}</Text>
+          <View style={[styles.summaryRow, { marginBottom: verticalScale(6) }]}>
+            <Text style={[styles.summaryLabel, { fontSize: moderateScale(13) }]}>
+              Subtotal ({totalItems} items)
+            </Text>
+            <Text style={[styles.summaryValue, { fontSize: moderateScale(13) }]}>
+              {formattedSubtotal}
+            </Text>
           </View>
           
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Delivery Fee</Text>
-            <Text style={styles.summaryValue}>{formattedDeliveryFee}</Text>
+          <View style={[styles.summaryRow, { marginBottom: verticalScale(6) }]}>
+            <Text style={[styles.summaryLabel, { fontSize: moderateScale(13) }]}>
+              Delivery Fee
+            </Text>
+            <Text style={[styles.summaryValue, { fontSize: moderateScale(13) }]}>
+              {formattedDeliveryFee}
+            </Text>
           </View>
           
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Tax (5%)</Text>
-            <Text style={styles.summaryValue}>{formattedTax}</Text>
+          <View style={[styles.summaryRow, { marginBottom: verticalScale(6) }]}>
+            <Text style={[styles.summaryLabel, { fontSize: moderateScale(13) }]}>
+              Tax (5%)
+            </Text>
+            <Text style={[styles.summaryValue, { fontSize: moderateScale(13) }]}>
+              {formattedTax}
+            </Text>
           </View>
           
-          <View style={styles.divider} />
+          <View style={[styles.divider, { marginVertical: verticalScale(10) }]} />
           
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>{formattedTotal}</Text>
+            <Text style={[styles.totalLabel, { fontSize: moderateScale(15) }]}>
+              Total Amount
+            </Text>
+            <Text style={[styles.totalValue, { fontSize: moderateScale(17) }]}>
+              {formattedTotal}
+            </Text>
           </View>
         </View>
 
         <TouchableOpacity 
-          style={styles.checkoutButton}
+          style={[styles.checkoutButton, {
+            borderRadius: moderateScale(12),
+            paddingVertical: verticalScale(16),
+          }]}
           onPress={handleCheckout}
         >
           <View style={styles.checkoutContent}>
-            <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+            <Text style={[styles.checkoutText, { fontSize: moderateScale(15) }]}>
+              Proceed to Checkout
+            </Text>
             <View style={styles.checkoutTotal}>
-              <Text style={styles.checkoutTotalText}>{formattedTotal}</Text>
-              <Ionicons name="chevron-forward" size={16} color="#fff" />
+              <Text style={[styles.checkoutTotalText, { fontSize: moderateScale(15) }]}>
+                {formattedTotal}
+              </Text>
+              <Ionicons name="chevron-forward" size={moderateScale(16)} color="#fff" />
             </View>
           </View>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
@@ -267,143 +460,142 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingHorizontal: moderateScale(16),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
   },
   backButton: {
-    padding: 8,
+    padding: moderateScale(6),
+    marginLeft: moderateScale(-6),
   },
   headerTitle: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+    textAlign: 'center',
   },
   clearButton: {
-    padding: 8,
-    opacity: 0.8,
+    padding: moderateScale(6),
+    marginRight: moderateScale(-6),
   },
   restaurantHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    borderLeftWidth: 4,
+    backgroundColor: '#fff8f6',
+    marginHorizontal: moderateScale(16),
+    borderLeftWidth: 3,
     borderLeftColor: '#ff6b35',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   restaurantName: {
-    fontSize: 14,
     fontWeight: '600',
     color: '#333',
-    marginLeft: 8,
+    marginLeft: moderateScale(8),
+    flex: 1,
+  },
+  list: {
     flex: 1,
   },
   listContent: {
-    paddingBottom: 20,
+    paddingTop: verticalScale(8),
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    paddingHorizontal: moderateScale(32),
     backgroundColor: '#f8f9fa',
   },
   emptyIllustration: {
-    marginBottom: 24,
+    marginBottom: verticalScale(20),
   },
   emptyTitle: {
-    fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
   emptySubtitle: {
-    fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 22,
+    marginBottom: verticalScale(30),
+    lineHeight: verticalScale(20),
+    paddingHorizontal: moderateScale(20),
   },
   shoppingButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ff6b35',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
-  },
-  shoppingButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  cartItem: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 16,
+    gap: moderateScale(6),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
+  shoppingButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  cartItem: {
+    backgroundColor: '#fff',
+    marginHorizontal: moderateScale(16),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f8f8f8',
+  },
   cartItemContent: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: verticalScale(12),
   },
   cartItemImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
+    // Styles handled inline
   },
   cartItemImagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cartItemDetails: {
     flex: 1,
-    marginLeft: 12,
   },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   cartItemName: {
-    fontSize: 16,
     fontWeight: '600',
     color: '#333',
     flex: 1,
-    marginRight: 8,
+    marginRight: moderateScale(8),
   },
   removeButton: {
-    padding: 4,
+    padding: moderateScale(2),
+    marginTop: moderateScale(-2),
   },
   cartItemRestaurant: {
-    fontSize: 13,
     color: '#666',
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   cartItemDescription: {
-    fontSize: 12,
     color: '#999',
-    lineHeight: 16,
-    marginBottom: 8,
+    lineHeight: verticalScale(14),
+    marginBottom: verticalScale(8),
   },
   priceContainer: {
     flexDirection: 'row',
@@ -411,12 +603,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cartItemPrice: {
-    fontSize: 15,
     fontWeight: 'bold',
     color: '#333',
   },
   itemTotal: {
-    fontSize: 15,
     fontWeight: 'bold',
     color: '#ff6b35',
   },
@@ -425,69 +615,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f8f9fa',
-    borderRadius: 25,
-    padding: 4,
     alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#eee',
   },
   quantityButton: {
-    padding: 8,
-    borderRadius: 20,
+    padding: moderateScale(6),
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 1,
+    elevation: 1,
+    alignItems: 'center',
+  },
+  quantityButtonDisabled: {
+    backgroundColor: '#f9f9f9',
   },
   quantityDisplay: {
-    minWidth: 40,
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: moderateScale(8),
   },
   quantityText: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
   },
   footer: {
     backgroundColor: '#fff',
-    padding: 20,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
+    shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 8,
   },
   summaryContainer: {
-    marginBottom: 16,
+    // marginBottom handled inline
   },
   summaryTitle: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 16,
+    marginBottom: verticalScale(14),
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
   summaryLabel: {
-    fontSize: 14,
     color: '#666',
   },
   summaryValue: {
-    fontSize: 14,
     fontWeight: '500',
     color: '#333',
   },
   divider: {
     height: 1,
     backgroundColor: '#f0f0f0',
-    marginVertical: 12,
   },
   totalRow: {
     flexDirection: 'row',
@@ -495,39 +680,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalLabel: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
   },
   totalValue: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: '#ff6b35',
   },
   checkoutButton: {
     backgroundColor: '#ff6b35',
-    borderRadius: 12,
-    paddingVertical: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   checkoutContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: moderateScale(16),
   },
   checkoutText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: 'bold',
   },
   checkoutTotal: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: moderateScale(4),
   },
   checkoutTotalText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: 'bold',
   },
 });
