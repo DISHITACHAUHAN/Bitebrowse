@@ -1,132 +1,203 @@
-// src/contexts/CartContext.js
-import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native'; // <-- To show warning popup
+import React, { createContext, useContext, useReducer } from 'react';
 
 const CartContext = createContext();
 
 const cartReducer = (state, action) => {
   switch (action.type) {
-    case 'SET_CART':
-      return action.payload;
     case 'ADD_ITEM':
-      const existingItem = state.find(item => item.id === action.payload.id);
+      const existingItem = state.items.find(item => item.id === action.payload.id);
+      
+      // Check if adding from different restaurant
+      if (state.currentRestaurant && state.currentRestaurant !== action.payload.restaurantId) {
+        return {
+          ...state,
+          showRestaurantWarning: true,
+          pendingItem: action.payload
+        };
+      }
+
       if (existingItem) {
-        return state.map(item =>
-          item.id === action.payload.id
+        return {
+          ...state,
+          items: state.items.map(item =>
+            item.id === action.payload.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          ),
+          currentRestaurant: action.payload.restaurantId
+        };
+      } else {
+        return {
+          ...state,
+          items: [...state.items, { ...action.payload, quantity: 1 }],
+          currentRestaurant: action.payload.restaurantId,
+          showRestaurantWarning: false
+        };
+      }
+
+    case 'INCREMENT_ITEM':
+      return {
+        ...state,
+        items: state.items.map(item =>
+          item.id === action.payload
             ? { ...item, quantity: item.quantity + 1 }
             : item
-        );
-      }
-      return [...state, { ...action.payload, quantity: 1 }];
+        )
+      };
+
+    case 'DECREMENT_ITEM':
+      return {
+        ...state,
+        items: state.items.map(item =>
+          item.id === action.payload
+            ? { ...item, quantity: Math.max(0, item.quantity - 1) }
+            : item
+        ).filter(item => item.quantity > 0),
+        // Clear restaurant if cart becomes empty
+        currentRestaurant: state.items.find(item => item.id === action.payload)?.quantity === 1 
+          ? null 
+          : state.currentRestaurant
+      };
+
     case 'REMOVE_ITEM':
-      return state.filter(item => item.id !== action.payload);
-    case 'UPDATE_QUANTITY':
-      return state.map(item =>
-        item.id === action.payload.id
-          ? { ...item, quantity: Math.max(0, action.payload.quantity) }
-          : item
-      ).filter(item => item.quantity > 0);
+      const remainingItems = state.items.filter(item => item.id !== action.payload);
+      return {
+        ...state,
+        items: remainingItems,
+        currentRestaurant: remainingItems.length === 0 ? null : state.currentRestaurant
+      };
+
     case 'CLEAR_CART':
-      return [];
+      return {
+        items: [],
+        currentRestaurant: null,
+        showRestaurantWarning: false,
+        pendingItem: null
+      };
+
+    case 'CONFIRM_RESTAURANT_CHANGE':
+      return {
+        items: [{ ...action.payload, quantity: 1 }],
+        currentRestaurant: action.payload.restaurantId,
+        showRestaurantWarning: false,
+        pendingItem: null
+      };
+
+    case 'DISMISS_WARNING':
+      return {
+        ...state,
+        showRestaurantWarning: false,
+        pendingItem: null
+      };
+
     default:
       return state;
   }
 };
 
 export const CartProvider = ({ children }) => {
-  const [cart, dispatch] = useReducer(cartReducer, []);
-  const [isLoading, setIsLoading] = useState(true);
+  const [state, dispatch] = useReducer(cartReducer, {
+    items: [],
+    currentRestaurant: null,
+    showRestaurantWarning: false,
+    pendingItem: null
+  });
 
-  useEffect(() => {
-    const loadCart = async () => {
-      try {
-        const savedCart = await AsyncStorage.getItem('cart');
-        if (savedCart) {
-          const parsedCart = JSON.parse(savedCart);
-          dispatch({ type: 'SET_CART', payload: parsedCart });
-        }
-      } catch (error) {
-        console.error('Failed to load cart from storage:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Calculate totals
+  const subtotal = state.items.reduce((total, item) => {
+    const price = typeof item.price === 'number' ? item.price : 
+                 typeof item.price === 'string' ? parseFloat(item.price.replace('₹', '').replace('$', '')) : 0;
+    return total + (price * item.quantity);
+  }, 0);
 
-    loadCart();
-  }, []);
+  const deliveryFee = subtotal > 0 ? 2.99 : 0;
+  const tax = subtotal * 0.05; // 5% tax
+  const total = subtotal + deliveryFee + tax;
 
-  useEffect(() => {
-    const saveCart = async () => {
-      if (!isLoading) {
-        try {
-          await AsyncStorage.setItem('cart', JSON.stringify(cart));
-        } catch (error) {
-          console.error('Failed to save cart to storage:', error);
-        }
-      }
-    };
+  // Format currency
+  const formatCurrency = (amount) => {
+    return `₹${amount.toFixed(2)}`;
+  };
 
-    saveCart();
-  }, [cart, isLoading]);
+  const addItem = (item, options = {}) => {
+    try {
+      const cartItem = {
+        ...item,
+        restaurantId: item.restaurantId || 'default',
+        restaurantName: item.restaurantName || 'Unknown Restaurant',
+        price: typeof item.price === 'string' ? item.price : `₹${item.price?.toFixed(2) || '0.00'}`
+      };
 
-  // ---- Custom Logic: Only one restaurant ----
-  const addItem = (item) => {
-    if (cart.length > 0) {
-      const currentRestaurant = cart[0].restaurantId; // Assume each item has restaurantId
-      if (item.restaurantId !== currentRestaurant) {
-        Alert.alert(
-          "Multiple Restaurants Not Allowed",
-          "You can only order from one restaurant at a time."
-        );
-        return; // ❌ Block adding
-        // OR 👉 if you prefer clearing cart instead, do:
-        // dispatch({ type: 'CLEAR_CART' });
-        // dispatch({ type: 'ADD_ITEM', payload: item });
-        // return;
-      }
+      dispatch({ type: 'ADD_ITEM', payload: cartItem });
+      return true;
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      return false;
     }
-    dispatch({ type: 'ADD_ITEM', payload: item });
   };
 
-  const removeItem = (id) => {
-    dispatch({ type: 'REMOVE_ITEM', payload: id });
+  const incrementItem = (itemId) => {
+    dispatch({ type: 'INCREMENT_ITEM', payload: itemId });
   };
 
-  const updateQuantity = (id, quantity) => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
+  const decrementItem = (itemId) => {
+    dispatch({ type: 'DECREMENT_ITEM', payload: itemId });
+  };
+
+  const removeItem = (itemId) => {
+    dispatch({ type: 'REMOVE_ITEM', payload: itemId });
   };
 
   const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
   };
 
-  const cartItems = Array.isArray(cart) ? cart : [];
-  const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-
-  const subtotal = cartItems.reduce((sum, item) => {
-    let priceValue = 0;
-    if (typeof item.price === 'string') {
-      priceValue = parseFloat(item.price.replace('₹', '')) || 0;
-    } else if (typeof item.price === 'number') {
-      priceValue = item.price;
+  const confirmRestaurantChange = () => {
+    if (state.pendingItem) {
+      dispatch({ type: 'CONFIRM_RESTAURANT_CHANGE', payload: state.pendingItem });
     }
-    const quantity = item.quantity || 0;
-    return sum + (priceValue * quantity);
-  }, 0);
+  };
 
-  const formattedSubtotal = `₹${subtotal.toFixed(2)}`;
+  const dismissWarning = () => {
+    dispatch({ type: 'DISMISS_WARNING' });
+  };
+
+  const getItemQuantity = (itemId) => {
+    const item = state.items.find(item => item.id === itemId);
+    return item ? item.quantity : 0;
+  };
+
+  const totalItems = state.items.reduce((total, item) => total + item.quantity, 0);
 
   const value = {
-    cart: cartItems,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
+    // State
+    cart: state.items,
+    items: state.items,
     totalItems,
+    currentRestaurant: state.currentRestaurant,
+    showRestaurantWarning: state.showRestaurantWarning,
+    
+    // Totals
     subtotal,
-    formattedSubtotal,
-    isLoading
+    deliveryFee,
+    tax,
+    total,
+    
+    // Formatted totals
+    formattedSubtotal: formatCurrency(subtotal),
+    formattedDeliveryFee: formatCurrency(deliveryFee),
+    formattedTax: formatCurrency(tax),
+    formattedTotal: formatCurrency(total),
+    
+    // Actions
+    addItem,
+    incrementItem,
+    decrementItem,
+    removeItem,
+    clearCart,
+    getItemQuantity,
+    confirmRestaurantChange,
+    dismissWarning
   };
 
   return (

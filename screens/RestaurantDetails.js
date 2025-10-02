@@ -18,7 +18,7 @@ const RestaurantDetails = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { restaurant } = route.params;
-  const { addItem, removeItem, updateQuantity, cart } = useCart();
+  const { addItem, removeItem, incrementItem, decrementItem, cart } = useCart();
   const scrollY = useRef(new Animated.Value(0)).current;
 
   // Sample menu data
@@ -100,11 +100,33 @@ const RestaurantDetails = () => {
   const handleQuantityChange = (itemId, delta) => {
     const existing = cart.find((item) => item.id === itemId);
     if (existing) {
-      const newQty = Math.max(0, existing.quantity + delta);
-      if (newQty === 0) {
+      if (delta > 0) {
+        // Increment
+        incrementItem(itemId);
+      } else if (delta < 0) {
+        // Decrement
+        const newQty = existing.quantity - 1;
+        if (newQty === 0) {
+          removeItem(itemId);
+        } else {
+          decrementItem(itemId);
+        }
+      }
+    }
+  };
+
+  // Simplified version - you can also use this approach:
+  const handleIncrement = (itemId) => {
+    incrementItem(itemId);
+  };
+
+  const handleDecrement = (itemId) => {
+    const existing = cart.find((item) => item.id === itemId);
+    if (existing) {
+      if (existing.quantity === 1) {
         removeItem(itemId);
       } else {
-        updateQuantity(itemId, newQty);
+        decrementItem(itemId);
       }
     }
   };
@@ -175,14 +197,14 @@ const RestaurantDetails = () => {
                 <View style={styles.quantityControls}>
                   <TouchableOpacity
                     style={styles.quantityButton}
-                    onPress={() => handleQuantityChange(item.id, -1)}
+                    onPress={() => handleDecrement(item.id)}
                   >
                     <Ionicons name="remove" size={20} color="#fff" />
                   </TouchableOpacity>
                   <Text style={styles.quantityText}>{quantity}</Text>
                   <TouchableOpacity
                     style={styles.quantityButton}
-                    onPress={() => handleQuantityChange(item.id, 1)}
+                    onPress={() => handleIncrement(item.id)}
                   >
                     <Ionicons name="add" size={20} color="#fff" />
                   </TouchableOpacity>
@@ -276,12 +298,6 @@ const RestaurantDetails = () => {
         <View style={styles.header}>
           {renderImage()}
           <View style={styles.headerOverlay}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="chevron-back" size={24} color="#fff" />
-            </TouchableOpacity>
 
             <View style={styles.headerContent}>
               <Text style={styles.restaurantName}>{restaurant.name}</Text>
@@ -294,40 +310,6 @@ const RestaurantDetails = () => {
                 <Text style={styles.ratingCount}>
                   ({restaurant.reviewsCount})
                 </Text>
-              </View>
-
-              <Text style={styles.restaurantCuisine}>{restaurant.cuisine}</Text>
-
-              <View style={styles.deliveryInfo}>
-                <View style={styles.infoItem}>
-                  <Ionicons name="time-outline" size={16} color="#fff" />
-                  <Text style={styles.infoText}>{restaurant.time}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Ionicons name="navigate-outline" size={16} color="#fff" />
-                  <Text style={styles.infoText}>{restaurant.distance}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Ionicons name="cash-outline" size={16} color="#fff" />
-                  <Text style={styles.infoText}>{restaurant.price}</Text>
-                </View>
-              </View>
-
-              <View style={styles.tagContainer}>
-                {restaurant.discount && (
-                  <View style={styles.discountTag}>
-                    <Ionicons name="pricetag" size={12} color="#fff" />
-                    <Text style={styles.discountText}>
-                      {restaurant.discount}
-                    </Text>
-                  </View>
-                )}
-                {restaurant.isPureVeg && (
-                  <View style={styles.vegTag}>
-                    <Ionicons name="leaf" size={12} color="#fff" />
-                    <Text style={styles.vegText}>Pure Veg</Text>
-                  </View>
-                )}
               </View>
             </View>
           </View>
@@ -393,6 +375,9 @@ const RestaurantDetails = () => {
     </View>
   );
 };
+
+// ... (styles remain the same)
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

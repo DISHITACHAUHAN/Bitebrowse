@@ -5,12 +5,9 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-
-const { width } = Dimensions.get('window');
 
 const RestaurantCard = ({ restaurant }) => {
   const navigation = useNavigation();
@@ -83,14 +80,10 @@ const RestaurantCard = ({ restaurant }) => {
       <View style={styles.infoContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.restaurantName} numberOfLines={1}>{restaurant.name}</Text>
-          {restaurant.noPackagingCharges && (
-            <View style={styles.freeDeliveryBadge}>
-              <Text style={styles.freeDeliveryText}>Free Delivery</Text>
-            </View>
-          )}
+          
         </View>
         
-        <Text style={styles.cuisine} numberOfLines={1}>{restaurant.cuisine}</Text>
+        {/* <Text style={styles.cuisine} numberOfLines={1}>{restaurant.cuisine}</Text> */}
         
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
@@ -99,30 +92,21 @@ const RestaurantCard = ({ restaurant }) => {
             <Text style={styles.reviewsCount}>({restaurant.reviewsCount})</Text>
           </View>
           
-          <View style={styles.statSeparator} />
+          {/* <View style={styles.statSeparator} /> */}
           
           <View style={styles.statItem}>
-            <Text style={styles.distance}>{restaurant.distance}</Text>
+            {/* <Text style={styles.distance}>{restaurant.distance}</Text> */}
           </View>
           
-          <View style={styles.statSeparator} />
+          {/* <View style={styles.statSeparator} /> */}
           
           <View style={styles.statItem}>
-            <Text style={styles.price}>{restaurant.price}</Text>
+            {/* <Text style={styles.price}>{restaurant.price}</Text> */}
           </View>
         </View>
         
-        <View style={styles.footer}>
-          {renderDeliveryChip()}
-          {renderDiscountBadge()}
-        </View>
         
-        {restaurant.freeDelivery && (
-          <View style={styles.offerContainer}>
-            <Ionicons name="flash-outline" size={12} color="#FF6B35" />
-            <Text style={styles.offerText}>Free delivery on orders above ₹199</Text>
-          </View>
-        )}
+        
       </View>
     </TouchableOpacity>
   );
@@ -130,15 +114,14 @@ const RestaurantCard = ({ restaurant }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    marginHorizontal: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
     marginBottom: 16,
-    elevation: 4,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 4,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -146,19 +129,19 @@ const styles = StyleSheet.create({
   },
   restaurantImage: {
     width: '100%',
-    height: 180,
+    height: 160,
   },
   emojiContainer: {
     width: '100%',
-    height: 180,
-    backgroundColor: '#F8F9FA',
+    height: 160,
+    backgroundColor: '#f8f8f8',
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   emojiText: {
-    fontSize: 60,
+    fontSize: 80,
   },
   ratingBadge: {
     position: 'absolute',
@@ -194,7 +177,7 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
   },
   infoContainer: {
-    padding: 16,
+    padding: 12,
   },
   headerRow: {
     flexDirection: 'row',
@@ -204,8 +187,8 @@ const styles = StyleSheet.create({
   },
   restaurantName: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A1A',
+    fontWeight: 'bold',
+    color: '#333',
     flex: 1,
     marginRight: 8,
   },
@@ -223,12 +206,12 @@ const styles = StyleSheet.create({
   cuisine: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   statItem: {
     flexDirection: 'row',
@@ -243,20 +226,20 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   rating: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#333',
   },
   reviewsCount: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#666',
   },
   distance: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#666',
   },
   price: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#666',
   },
   footer: {

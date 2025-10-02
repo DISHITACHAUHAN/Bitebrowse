@@ -3,12 +3,44 @@ import {
   View,
   Text,
   ScrollView,
-  StyleSheet
+  StyleSheet,
+  Dimensions,
+  Platform
 } from "react-native";
+import PromoCarousel from '../components/PromoCarousel'
 import TopNavbar from "../components/TopNavbar";
 import SearchBar from "../components/SearchBar";
 import CategoriesList from "../components/CategoriesList";
 import NearbyRestaurants from "../components/NearbyRestaurants";
+
+// Add the missing responsive functions
+const { width, height } = Dimensions.get('window');
+
+// Guideline sizes based on standard ~5.5 inch screen
+const GUIDELINE_WIDTH = 375;
+const GUIDELINE_HEIGHT = 812;
+
+const scale = (size) => (width / GUIDELINE_WIDTH) * size;
+const verticalScale = (size) => (height / GUIDELINE_HEIGHT) * size;
+const moderateScale = (size, factor = 0.5) => size + (scale(size) - size) * factor;
+
+// Simple responsive object
+const responsive = {
+  spacing: {
+    xs: verticalScale(4),
+    sm: verticalScale(8),
+    md: verticalScale(12),
+    lg: verticalScale(16),
+    xl: verticalScale(20),
+  },
+  font: {
+    sm: moderateScale(12),
+    md: moderateScale(14),
+    lg: moderateScale(16),
+    xl: moderateScale(18),
+    xxl: moderateScale(20),
+  }
+};
 
 // Mock Data (expanded slightly for completeness)
 const MOCK_RESTAURANTS = [
@@ -24,7 +56,7 @@ const MOCK_RESTAURANTS = [
     noPackagingCharges: true,
     isPureVeg: false,
     reviewsCount: "50+",
-    image: "https://example.com/cake-queen.jpg" // Changed to URL for Image compatibility (emoji fallback if needed)
+    image: "https://example.com/cake-queen.jpg"
   },
   {
     id: "2",
@@ -40,7 +72,6 @@ const MOCK_RESTAURANTS = [
     reviewsCount: "120+",
     image: "https://example.com/spice-haven.jpg"
   },
-  // Add more as needed
 ];
 
 const CUISINE_CATEGORIES = [
@@ -48,7 +79,6 @@ const CUISINE_CATEGORIES = [
   { id: "indian", name: "Indian", icon: "🍛" },
   { id: "chinese", name: "Chinese", icon: "🍜" },
   { id: "italian", name: "Italian", icon: "🍕" },
-  // Add more as needed
 ];
 
 export default function HomeScreen({ navigation }) {
@@ -79,7 +109,6 @@ export default function HomeScreen({ navigation }) {
   }, [searchQuery, selectedCategory, restaurants]);
 
   const handleRestaurantPress = (restaurant) => {
-    // Navigate to restaurant details screen (matches stack name)
     navigation.navigate("RestaurantDetails", { restaurant });
   };
 
@@ -92,11 +121,9 @@ export default function HomeScreen({ navigation }) {
       <TopNavbar />
       
       {/* Main Scrollable Content */}
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: responsive.spacing.xl }}>
         {/* Location Header */}
-        <View style={styles.locationContainer}>
-          <Text style={styles.locationText}>New Delhi, India</Text>
-        </View>
+        
 
         {/* Search Bar */}
         <SearchBar
@@ -104,18 +131,16 @@ export default function HomeScreen({ navigation }) {
           onSearchChange={setSearchQuery}
           onClearSearch={handleClearSearch}
         />
+        
+        <PromoCarousel />
 
-        {/* Categories */}
-        <CategoriesList
-          categories={CUISINE_CATEGORIES}
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-        />
 
         {/* Restaurants */}
-        <View style={styles.restaurantsSection}>
+        <View style={[styles.restaurantsSection, { marginTop: responsive.spacing.lg }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Nearby Restaurants</Text>
+            <Text style={[styles.sectionTitle, { fontSize: responsive.font.xxl }]}>
+              Food Court
+            </Text>
           </View>
 
           <NearbyRestaurants
@@ -131,25 +156,25 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   locationContainer: {
-    paddingHorizontal: 15,
-    paddingTop: 10,
-    paddingBottom: 5
+    paddingHorizontal: responsive.spacing.lg,
+    paddingBottom: responsive.spacing.xs
   },
   locationText: {
-    fontSize: 16,
     color: "#666",
     fontWeight: "500"
   },
   restaurantsSection: { 
-    paddingHorizontal: 15 
+    paddingHorizontal: responsive.spacing.lg 
   },
   sectionHeader: { 
     flexDirection: "row", 
     justifyContent: "space-between", 
-    marginBottom: 15 
+    marginBottom: responsive.spacing.lg 
   },
   sectionTitle: { 
-    fontSize: 20, 
     fontWeight: "bold" 
   },
 });
+
+// Export the responsive functions for use in other components
+export { scale, verticalScale, moderateScale, responsive };
