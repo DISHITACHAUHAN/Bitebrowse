@@ -10,15 +10,23 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../contexts/ThemeContext";
+import SearchBar from "./SearchBar";
+import { LinearGradient } from "expo-linear-gradient";
 
-export default function TopNavbar() {
+export default function TopNavbar({
+  searchQuery,
+  onSearchChange,
+  onClearSearch,
+}) {
   const { width } = useWindowDimensions();
   const navigation = useNavigation();
+  const { colors, isDark } = useTheme();
 
   const getResponsivePadding = () => {
-    if (width < 375) return 16;
-    if (width < 414) return 20;
-    if (width < 768) return 24;
+    if (width < 375) return 20;
+    if (width < 414) return 24;
+    if (width < 768) return 28;
     return 32;
   };
 
@@ -26,103 +34,142 @@ export default function TopNavbar() {
 
   return (
     <SafeAreaView edges={["top"]} style={styles.safeArea}>
-      <View
-        style={[styles.container, { paddingHorizontal: responsivePadding }]}
+      <LinearGradient
+        colors={["#8B3358", "#670D2F", "#3A081C"]}
+        start={{ x: 0, y: 1 }}   // bottom-left
+        end={{ x: 1, y: 0 }}     // top-right
       >
-        {/* Brand Section */}
-        <View style={styles.brandContainer}>
-          <Text style={styles.brandName}>Vittles</Text>
-        </View>
 
-        {/* User Section */}
-        <View style={styles.userContainer}>
-          <Text style={styles.userGreeting}>Hello, John</Text>
-          
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Profile")}
-            activeOpacity={0.7}
-            style={styles.profileButton}
-          >
-            <Image
-              source={{ uri: "https://i.pravatar.cc/150?img=3" }}
-              style={styles.profileImage}
-            />
-            <View style={styles.onlineIndicator} />
-          </TouchableOpacity>
+        <View
+          style={[
+            styles.container,
+            { paddingHorizontal: responsivePadding },
+          ]}
+        >
+          {/* Left Section - Location & Greeting */}
+          <View style={styles.leftSection}>
+            
+            <Text style={[styles.greetingText, { color: "#FFFFFF" }]}>
+              Hello, John 👋
+            </Text>
+          </View>
+
+          {/* Right Section - Notifications & Profile */}
+          <View style={styles.rightSection}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Profile")}
+              style={styles.profileButton}
+            >
+              <Image
+                source={{ uri: "https://i.pravatar.cc/150?img=3" }}
+                style={[styles.profileImage, { borderColor: "#FFFFFF" }]}
+              />
+            </TouchableOpacity>
+
+            
+          </View>
         </View>
+      </LinearGradient>
+
+      {/* Search Bar Section */}
+      <LinearGradient
+        colors={["#8B3358", "#670D2F", "#3A081C"]}
+        start={{ x: 0, y: 1 }}   // bottom-left
+        end={{ x: 1, y: 0 }}     // top-right
+      >
+
+      <View
+        style={[styles.searchContainer, { paddingHorizontal: responsivePadding }]}
+      >
+        <SearchBar
+          searchQuery={searchQuery}
+          onSearchChange={onSearchChange}
+          onClearSearch={onClearSearch}
+          compact={false}
+        />
+
       </View>
+</LinearGradient>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#ffffff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: "#670D2F", // fallback base
   },
   container: {
-    height: 64,
-    backgroundColor: "#ffffff",
+    height: 80,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f8fafc",
+    paddingTop: 8,
   },
-  brandContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
+  leftSection: {
     flex: 1,
   },
-  iconWrapper: {
-    padding: 6,
-    backgroundColor: "#f0f7ff",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#e0f2fe",
-  },
-  brandName: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#1e293b",
-    letterSpacing: 0.3,
-  },
-  userContainer: {
+  locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
-    flexShrink: 1,
+    gap: 4,
+    marginBottom: 4,
   },
-  userGreeting: {
-    fontSize: 15,
+  locationText: {
+    fontSize: 12,
     fontWeight: "500",
-    color: "#475569",
     letterSpacing: 0.2,
   },
-  profileButton: {
+  greetingText: {
+    fontSize: 20,
+    fontWeight: "700",
+    letterSpacing: -0.5,
+  },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
     position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  profileButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 3,
   },
   profileImage: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     borderWidth: 2,
-    borderColor: "#f1f5f9",
   },
-  onlineIndicator: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: "#10b981",
-    borderWidth: 2,
-    borderColor: "#ffffff",
+  searchContainer: {
+    paddingBottom: 16,
+    paddingTop: 8,
   },
 });

@@ -27,20 +27,13 @@ import LoginScreen from "./screens/LoginScreen";
 import { DataProvider } from "./contexts/DataContext";
 import ProfileScreen from "./screens/ProfileScreen";
 import vit from './assets/Vittles_2.jpg';
+import VendorDashboard from "./screens/VendorDashboard";
+import ProfileStack from "./navigation/ProfileStack";
+import VendorMenu from "./screens/VendorMenu";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext"; // Import theme
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
-// Simple Color Scheme
-const COLORS = {
-  primary: '#00a850',
-  background: '#ffffff',
-  text: '#1a1a1a',
-  textSecondary: '#666666',
-  border: '#e6e6e6',
-  error: '#dc2626',
-  white: '#ffffff',
-};
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,15 +49,13 @@ const FloatingCartButton = () => {
   const { totalItems } = useCart();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme(); // Use theme colors
 
   if (totalItems === 0) return null;
 
-  // Calculate safe position above tab bar
   const getButtonPosition = () => {
     const tabBarHeight = isTablet ? 75 : 60;
     const buttonHeight = isTablet ? 64 : 56;
-    
-    // Position the button well above the tab bar with proper spacing
     const bottomPosition = insets.bottom + tabBarHeight + 20;
     
     return {
@@ -88,6 +79,7 @@ const FloatingCartButton = () => {
           width: isTablet ? 64 : 56,
           height: isTablet ? 64 : 56,
           borderRadius: isTablet ? 32 : 28,
+          backgroundColor: colors.primary,
         }
       ]}>
         <Ionicons name="cart" size={isTablet ? 28 : 24} color="white" />
@@ -98,6 +90,7 @@ const FloatingCartButton = () => {
               minWidth: isTablet ? 24 : 20,
               height: isTablet ? 24 : 20,
               borderRadius: isTablet ? 12 : 10,
+              backgroundColor: colors.error,
             }
           ]}>
             <Text style={styles.badgeText}>
@@ -113,11 +106,12 @@ const FloatingCartButton = () => {
 // Main Tabs with Safe Area
 function MainTabs() {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme(); // Use theme colors
   
   const getTabBarStyle = () => ({
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.tabBar,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: colors.border,
     height: (isTablet ? 75 : 60) + insets.bottom,
     paddingBottom: insets.bottom + (isTablet ? 12 : 8),
     paddingTop: isTablet ? 12 : 8,
@@ -136,8 +130,11 @@ function MainTabs() {
   });
 
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor={COLORS.background} barStyle="dark-content" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        backgroundColor={colors.background} 
+        barStyle={colors.isDark ? 'light-content' : 'dark-content'} 
+      />
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -158,8 +155,8 @@ function MainTabs() {
               />
             );
           },
-          tabBarActiveTintColor: COLORS.primary,
-          tabBarInactiveTintColor: COLORS.textSecondary,
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textSecondary,
           tabBarStyle: getTabBarStyle(),
           tabBarLabelStyle: {
             fontSize: isTablet ? 12 : 10,
@@ -170,25 +167,29 @@ function MainTabs() {
       >
         <Tab.Screen name="Home" component={HomeStack} />
         <Tab.Screen name="Alerts" component={AlertsScreen} />
-        <Tab.Screen name="Account" component={ProfileScreen} />
+        <Tab.Screen name="Account" component={ProfileStack} />
+        <Tab.Screen name="menu" component={VendorMenu} />
+        <Tab.Screen name="vendor" component={VendorDashboard}/>
       </Tab.Navigator>
-      
-      {/* Floating cart button */}
-      {/* <FloatingCartButton /> */}
     </View>
   );
 }
 
-// Rest of the code remains the same...
 function RootNavigator() {
   const { user, isLoading } = useAuth();
+  const { colors } = useTheme(); // Use theme colors
 
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator 
+      screenOptions={{ 
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background }
+      }}
+    >
       {user ? (
         <Stack.Screen name="MainTabs" component={MainTabs} />
       ) : (
@@ -201,28 +202,33 @@ function RootNavigator() {
 }
 
 const AppContainer = ({ children }) => {
+  const { colors } = useTheme(); // Use theme colors
+  
   return (
-    <View style={styles.appContainer}>
+    <View style={[styles.appContainer, { backgroundColor: colors.background }]}>
       {children}
     </View>
   );
 };
 
 // Loading Component with full screen vit image
-const LoadingScreen = () => (
-  <View style={styles.fullScreenContainer}>
-    <Image 
-      source={vit} 
-      style={styles.fullScreenImage}
-      resizeMode="cover"
-    />
-    
-  </View>
-);
+const LoadingScreen = () => {
+  const { colors } = useTheme(); // Use theme colors
+  
+  return (
+    <View style={[styles.fullScreenContainer, { backgroundColor: colors.background }]}>
+      <Image 
+        source={vit} 
+        style={styles.fullScreenImage}
+        resizeMode="cover"
+      />
+    </View>
+  );
+};
 
 export default function App() {
   return (
-    <AppContainer>
+    <ThemeProvider>
       <AuthProvider>
         <DataProvider>
           <CartProvider>
@@ -232,18 +238,17 @@ export default function App() {
           </CartProvider>
         </DataProvider>
       </AuthProvider>
-    </AppContainer>
+    </ThemeProvider>
   );
 }
 
+// Update styles to use theme where needed
 const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   fullScreenContainer: {
     flex: 1,
@@ -262,12 +267,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
   loadingText: {
     marginTop: verticalScale(16),
     fontSize: scale(16),
-    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   floatingButton: {
@@ -275,7 +278,6 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   cartButton: {
-    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
@@ -292,16 +294,15 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    backgroundColor: COLORS.error,
     justifyContent: "center",
     alignItems: "center",
     top: 0,
     right: 0,
     borderWidth: 2,
-    borderColor: COLORS.white,
+    borderColor: 'white',
   },
   badgeText: {
-    color: COLORS.white,
+    color: 'white',
     fontSize: 10,
     fontWeight: "bold",
   },

@@ -11,7 +11,9 @@ import {
   Animated,
   Alert
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../contexts/ThemeContext"; // Import theme hook
 
 const MOCK_ALERTS = [
   { 
@@ -86,6 +88,7 @@ export default function AlertsScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState("all");
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const { colors } = useTheme(); // Get theme colors
 
   const filteredAlerts = activeTab === "all" 
     ? alerts 
@@ -162,25 +165,33 @@ export default function AlertsScreen({ navigation }) {
         <TouchableOpacity 
           style={[
             styles.alertCard,
-            !item.read && styles.unreadAlert
+            !item.read && styles.unreadAlert,
+            { 
+              backgroundColor: colors.card,
+              borderLeftColor: colors.primary 
+            }
           ]}
           onPress={() => markAsRead(item.id)}
           activeOpacity={0.7}
         >
-          {!item.read && <View style={styles.unreadDot} />}
+          {!item.read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
           
-          <View style={[styles.iconContainer, { backgroundColor: `${alertType.color}15` }]}>
+          <View style={[styles.iconContainer, { 
+            backgroundColor: colors.isDark ? `${alertType.color}20` : `${alertType.color}15` 
+          }]}>
             <Ionicons name={alertType.icon} size={20} color={alertType.color} />
           </View>
           
           <View style={styles.alertContent}>
-            <Text style={styles.alertTitle}>{item.title}</Text>
-            <Text style={styles.alertDescription} numberOfLines={2}>
+            <Text style={[styles.alertTitle, { color: colors.text }]}>{item.title}</Text>
+            <Text style={[styles.alertDescription, { color: colors.textSecondary }]} numberOfLines={2}>
               {item.description}
             </Text>
             <View style={styles.alertFooter}>
-              <Text style={styles.alertTime}>{item.time}</Text>
-              <View style={[styles.typeBadge, { backgroundColor: `${alertType.color}15` }]}>
+              <Text style={[styles.alertTime, { color: colors.textSecondary }]}>{item.time}</Text>
+              <View style={[styles.typeBadge, { 
+                backgroundColor: colors.isDark ? `${alertType.color}20` : `${alertType.color}15` 
+              }]}>
                 <Text style={[styles.typeText, { color: alertType.color }]}>
                   {alertType.title}
                 </Text>
@@ -193,7 +204,7 @@ export default function AlertsScreen({ navigation }) {
             style={styles.closeButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="close" size={18} color="#9ca3af" />
+            <Ionicons name="close" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         </TouchableOpacity>
       </Animated.View>
@@ -202,7 +213,14 @@ export default function AlertsScreen({ navigation }) {
 
   const TabButton = ({ type, title, icon, color }) => (
     <TouchableOpacity
-      style={[styles.tabButton, activeTab === type && styles.activeTab]}
+      style={[
+        styles.tabButton, 
+        activeTab === type && styles.activeTab,
+        { 
+          borderColor: colors.border,
+          backgroundColor: activeTab === type ? colors.primary : 'transparent'
+        }
+      ]}
       onPress={() => setActiveTab(type)}
       activeOpacity={0.7}
     >
@@ -211,7 +229,11 @@ export default function AlertsScreen({ navigation }) {
         size={16} 
         color={activeTab === type ? "#ffffff" : color} 
       />
-      <Text style={[styles.tabText, activeTab === type && styles.activeTabText]}>
+      <Text style={[
+        styles.tabText, 
+        activeTab === type && styles.activeTabText,
+        { color: activeTab === type ? "#ffffff" : colors.textSecondary }
+      ]}>
         {title}
       </Text>
     </TouchableOpacity>
@@ -219,17 +241,17 @@ export default function AlertsScreen({ navigation }) {
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
-      <View style={styles.emptyIconContainer}>
+      <View style={[styles.emptyIconContainer, { backgroundColor: colors.background }]}>
         <Ionicons 
           name={activeTab === "all" ? "notifications-off-outline" : "filter-outline"} 
           size={80} 
-          color="#d1d5db" 
+          color={colors.textSecondary} 
         />
       </View>
-      <Text style={styles.emptyTitle}>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>
         {activeTab === "all" ? "No Notifications Yet" : `No ${getAlertType(activeTab).title}`}
       </Text>
-      <Text style={styles.emptySubtitle}>
+      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
         {activeTab === "all" 
           ? "We'll notify you when something exciting happens!" 
           : `You don't have any ${getAlertType(activeTab).title.toLowerCase()} right now`
@@ -237,14 +259,14 @@ export default function AlertsScreen({ navigation }) {
       </Text>
       {activeTab !== "all" ? (
         <TouchableOpacity 
-          style={styles.showAllButton}
+          style={[styles.showAllButton, { backgroundColor: colors.primary }]}
           onPress={() => setActiveTab("all")}
         >
           <Text style={styles.showAllButtonText}>View All Notifications</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity 
-          style={styles.exploreButton}
+          style={[styles.exploreButton, { backgroundColor: colors.primary }]}
           onPress={() => navigation.navigate('Home')}
         >
           <Text style={styles.exploreButtonText}>Explore Restaurants</Text>
@@ -254,53 +276,66 @@ export default function AlertsScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        barStyle="light-content" 
+        backgroundColor="#8B3358" 
+      />
       
       {/* Main Container with Top Padding */}
       <View style={styles.mainContainer}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>Notifications</Text>
-            {unreadCount > 0 && (
-              <Text style={styles.unreadCount}>
-                {unreadCount} unread {unreadCount === 1 ? 'message' : 'messages'}
-              </Text>
-            )}
-          </View>
-          <View style={styles.headerActions}>
-            {unreadCount > 0 && (
+        {/* Header with LinearGradient */}
+        <LinearGradient
+          colors={["#8B3358", "#670D2F", "#3A081C"]}
+          start={{ x: 0, y: 1 }}   // bottom-left
+          end={{ x: 1, y: 0 }}     // top-right
+          style={styles.header}
+        >
+          <View style={styles.headerContent}>
+            <View>
+              <Text style={styles.headerTitle}>Notifications</Text>
+              {unreadCount > 0 && (
+                <Text style={styles.unreadCount}>
+                  {unreadCount} unread {unreadCount === 1 ? 'message' : 'messages'}
+                </Text>
+              )}
+            </View>
+            <View style={styles.headerActions}>
+              {unreadCount > 0 && (
+                <TouchableOpacity 
+                  onPress={markAllAsRead} 
+                  style={styles.actionButton}
+                >
+                  <Text style={styles.markReadText}>Mark all read</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity 
-                onPress={markAllAsRead} 
-                style={styles.actionButton}
+                onPress={() => navigation.navigate('NotificationSettings')} 
+                style={styles.settingsButton}
               >
-                <Text style={styles.markReadText}>Mark all read</Text>
+                <Ionicons name="settings-outline" size={22} color="#ffffff" />
               </TouchableOpacity>
-            )}
-            <TouchableOpacity 
-              onPress={() => navigation.navigate('NotificationSettings')} 
-              style={styles.settingsButton}
-            >
-              <Ionicons name="settings-outline" size={22} color="#6b7280" />
-            </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Stats Bar */}
-        <View style={styles.statsBar}>
-          <Text style={styles.statsText}>
+        <View style={[styles.statsBar, { backgroundColor: colors.background }]}>
+          <Text style={[styles.statsText, { color: colors.textSecondary }]}>
             {filteredAlerts.length} {filteredAlerts.length === 1 ? 'notification' : 'notifications'}
           </Text>
           {activeTab !== "all" && (
             <TouchableOpacity onPress={() => setActiveTab("all")}>
-              <Text style={styles.showAllText}>Show All</Text>
+              <Text style={[styles.showAllText, { color: colors.primary }]}>Show All</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* Filter Tabs - Scrollable */}
-        <View style={styles.tabScrollContainer}>
+        <View style={[styles.tabScrollContainer, { 
+          backgroundColor: colors.background,
+          borderBottomColor: colors.border 
+        }]}>
           <FlatList
             horizontal
             data={ALERT_TYPES}
@@ -319,7 +354,7 @@ export default function AlertsScreen({ navigation }) {
         </View>
 
         {/* Alerts List */}
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
           {filteredAlerts.length > 0 ? (
             <FlatList
               data={filteredAlerts}
@@ -331,8 +366,8 @@ export default function AlertsScreen({ navigation }) {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={onRefresh}
-                  colors={["#3b82f6"]}
-                  tintColor="#3b82f6"
+                  colors={[colors.primary]}
+                  tintColor={colors.primary}
                 />
               }
             />
@@ -344,7 +379,7 @@ export default function AlertsScreen({ navigation }) {
         {/* Clear All FAB */}
         {filteredAlerts.length > 0 && (
           <TouchableOpacity 
-            style={styles.clearAllFAB}
+            style={[styles.clearAllFAB, { backgroundColor: colors.error }]}
             onPress={clearAllAlerts}
           >
             <Ionicons name="trash-outline" size={20} color="#ffffff" />
@@ -355,7 +390,7 @@ export default function AlertsScreen({ navigation }) {
         {/* Restore Button for Empty State */}
         {alerts.length === 0 && (
           <TouchableOpacity 
-            style={styles.restoreFAB}
+            style={[styles.restoreFAB, { backgroundColor: colors.primary }]}
             onPress={restoreAlerts}
           >
             <Ionicons name="refresh-outline" size={20} color="#ffffff" />
@@ -370,30 +405,36 @@ export default function AlertsScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#ffffff",
   },
   mainContainer: {
     flex: 1,
-    paddingTop: 20, // Added top padding here
   },
   header: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  headerContent: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#111827",
+    color: '#FFF',
   },
   unreadCount: {
     fontSize: 14,
-    color: "#6b7280",
     marginTop: 4,
+    color: 'rgba(255,255,255,0.9)',
   },
   headerActions: {
     flexDirection: "row",
@@ -405,17 +446,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   markReadText: {
-    color: "#3b82f6",
     fontSize: 14,
     fontWeight: "600",
+    color: '#FFF',
   },
   clearText: {
-    color: "#ef4444",
     fontSize: 16,
     fontWeight: "600",
   },
   restoreText: {
-    color: "#3b82f6",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -429,22 +468,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: "#f8fafc",
   },
   statsText: {
     fontSize: 14,
-    color: "#6b7280",
     fontWeight: "500",
   },
   showAllText: {
     fontSize: 14,
-    color: "#3b82f6",
     fontWeight: "500",
   },
   tabScrollContainer: {
-    backgroundColor: "#f8fafc",
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
   },
   tabContainer: {
     paddingHorizontal: 16,
@@ -457,26 +491,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
   },
   activeTab: {
-    backgroundColor: "#3b82f6",
-    borderColor: "#3b82f6",
+    // Background handled inline
   },
   tabText: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#6b7280",
     marginLeft: 6,
   },
   activeTabText: {
-    color: "#ffffff",
+    // Color handled inline
   },
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
   },
   listContainer: {
     padding: 16,
@@ -485,7 +514,6 @@ const styles = StyleSheet.create({
   alertCard: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -495,17 +523,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     position: "relative",
+    borderLeftWidth: 3,
   },
   unreadAlert: {
-    backgroundColor: "#f0f9ff",
-    borderLeftWidth: 3,
-    borderLeftColor: "#3b82f6",
+    // Background handled inline for unread alerts
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#3b82f6",
     position: "absolute",
     left: 8,
     top: 8,
@@ -518,13 +544,11 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1f2937",
     lineHeight: 22,
     marginBottom: 4,
   },
   alertDescription: {
     fontSize: 14,
-    color: "#6b7280",
     lineHeight: 18,
     marginBottom: 8,
   },
@@ -535,7 +559,6 @@ const styles = StyleSheet.create({
   },
   alertTime: {
     fontSize: 13,
-    color: "#6b7280",
     fontWeight: "500",
   },
   typeBadge: {
@@ -571,7 +594,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#f8fafc",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
@@ -579,19 +601,16 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#374151",
     textAlign: "center",
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
-    color: "#9ca3af",
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 24,
   },
   showAllButton: {
-    backgroundColor: "#3b82f6",
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
@@ -602,7 +621,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   exploreButton: {
-    backgroundColor: "#10b981",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -616,7 +634,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 30, // Increased bottom padding
     right: 20,
-    backgroundColor: "#ef4444",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -638,7 +655,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 30, // Increased bottom padding
     right: 20,
-    backgroundColor: "#3b82f6",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,

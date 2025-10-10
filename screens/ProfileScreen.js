@@ -1,184 +1,143 @@
+// screens/ProfileScreen.js
 import React from "react";
 import { 
   View, 
   Text, 
-  Image, 
-  TouchableOpacity, 
   ScrollView, 
+  TouchableOpacity, 
   StyleSheet, 
-  Alert,
-  ActivityIndicator 
+  Alert, 
+  StatusBar 
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../contexts/AuthContext";
-import { useData } from "../contexts/DataContext";
-import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../contexts/ThemeContext"; // Import theme hook
 
-export default function ProfileScreen() {
-  const { user, logout } = useAuth();
-  const { userData, stats, menuItems, loading } = useData();
-  const navigation = useNavigation();
-  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+export default function ProfileScreen({ navigation }) {
+  const { colors } = useTheme(); // Get theme colors
 
-  const handleLogout = () => {
+  const menuItems = [
+    { 
+      icon: "card-outline", 
+      title: "Payment Methods", 
+      onPress: () => navigation.navigate("PaymentMethods") 
+    },
+    { 
+      icon: "receipt-outline", 
+      title: "Order History", 
+      onPress: () => navigation.navigate("OrderHistory") 
+    },  
+    { 
+      icon: "star-outline", 
+      title: "My Reviews", 
+      onPress: () => navigation.navigate("MyReviews") 
+    },
+    { 
+      icon: "settings-outline", 
+      title: "Settings", 
+      onPress: () => navigation.navigate("Settings") 
+    },
+    { 
+      icon: "help-circle-outline", 
+      title: "Help & Support", 
+      onPress: () => navigation.navigate("HelpSupport") 
+    },
+    { 
+      icon: "document-text-outline", 
+      title: "Privacy Policy", 
+      onPress: () => navigation.navigate("PrivacyPolicy") 
+    },
+  ];
+
+  const handleSignOut = () => {
     Alert.alert(
       "Sign Out",
       "Are you sure you want to sign out?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Sign Out", 
-          style: "destructive",
-          onPress: async () => {
-            setIsLoggingOut(true);
-            try {
-              await logout();
-            } catch (error) {
-              Alert.alert("Error", "Failed to sign out");
-            } finally {
-              setIsLoggingOut(false);
-            }
-          }
-        }
+        { text: "Sign Out", style: "destructive", onPress: () => console.log("User signed out") }
       ]
     );
   };
 
-  const handleEditProfile = () => {
-    navigation.navigate("EditProfile");
-  };
-
-  const handleMenuItemPress = (item) => {
-    if (item.screen) {
-      navigation.navigate(item.screen);
-    }
-  };
-
-  // Default menu items if none provided
-  const defaultMenuItems = [
-    { id: "1", label: "My Orders", icon: "receipt-outline", screen: "Orders" },
-    { id: "2", label: "Favorites", icon: "heart-outline", screen: "Favorites" },
-    { id: "3", label: "Addresses", icon: "location-outline", screen: "Addresses" },
-    { id: "4", label: "Payment Methods", icon: "card-outline", screen: "Payments" },
-    { id: "5", label: "Notifications", icon: "notifications-outline", screen: "Notifications" },
-    { id: "6", label: "Help & Support", icon: "help-circle-outline", screen: "Support" },
-    { id: "7", label: "About", icon: "information-circle-outline", screen: "About" },
-  ];
-
-  const menuItemsToDisplay = menuItems || defaultMenuItems;
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ff6b35" />
-        <Text style={styles.loadingText}>Loading your profile...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle="light-content" backgroundColor="#8B3358" />
+      
+      {/* Header with LinearGradient */}
+      <LinearGradient
+        colors={["#8B3358", "#670D2F", "#3A081C"]}
+        start={{ x: 0, y: 1 }}   // bottom-left
+        end={{ x: 1, y: 0 }}     // top-right
+        style={styles.header}
+      >
+        <Text style={styles.headerTitle}>Account</Text>
+      </LinearGradient>
+
       <ScrollView 
-        style={styles.scrollView} 
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Profile Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity 
-            style={styles.settingsButton}
-            onPress={() => navigation.navigate("Settings")}
-          >
-            <Ionicons name="settings-outline" size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
+        {/* Personal Info Section */}
+        <View style={[styles.personalInfoCard, { backgroundColor: colors.card }]}>
           <View style={styles.avatarContainer}>
-            <Image 
-              source={{ 
-                uri: userData?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" 
-              }} 
-              style={styles.avatar} 
-              defaultSource={require("../assets/default-avatar.png")}
-            />
-            <TouchableOpacity style={styles.editAvatarButton} onPress={handleEditProfile}>
-              <Ionicons name="camera" size={16} color="#fff" />
-            </TouchableOpacity>
+            <View style={styles.avatar}>
+              <Ionicons name="person-circle-outline" size={80} color={colors.primary} />
+            </View>
           </View>
-          
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{userData?.name || "User Name"}</Text>
-            <Text style={styles.userEmail}>{userData?.email || "user@example.com"}</Text>
-            <Text style={styles.memberSince}>
-              Member since {userData?.joinedDate || "2024"}
-            </Text>
+            <Text style={[styles.userName, { color: colors.text }]}>John Davidson</Text>
+            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>john.d@example.com</Text>
+            <Text style={[styles.memberSince, { color: colors.textSecondary }]}>Member since January 2024</Text>
           </View>
-          
-          <TouchableOpacity style={styles.editProfileButton} onPress={handleEditProfile}>
-            <Ionicons name="create-outline" size={18} color="#ff6b35" />
+          <TouchableOpacity 
+            style={[styles.editProfileButton, { backgroundColor: colors.primary }]}
+            onPress={() => navigation.navigate("PersonalInfo")}
+          >
+            <Ionicons name="pencil-outline" size={16} color="#fff" />
             <Text style={styles.editProfileText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Stats Section */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats?.orders || 12}</Text>
-            <Text style={styles.statLabel}>Orders</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats?.reviews || 8}</Text>
-            <Text style={styles.statLabel}>Reviews</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats?.favorites || 15}</Text>
-            <Text style={styles.statLabel}>Favorites</Text>
-          </View>
-        </View>
-
-        {/* Menu Section */}
-        <View style={styles.menuContainer}>
-          <Text style={styles.menuTitle}>Account</Text>
-          {menuItemsToDisplay.map((item, index) => (
-            <TouchableOpacity 
-              key={item.id} 
+        {/* Menu Items */}
+        <View style={[styles.menuContainer, { backgroundColor: colors.card }]}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
               style={[
                 styles.menuItem,
-                index === menuItemsToDisplay.length - 1 && styles.lastMenuItem
+                index === menuItems.length - 1 && styles.lastMenuItem,
+                { 
+                  borderBottomColor: colors.isDark ? 'rgba(255,255,255,0.1)' : '#f5f5f5' 
+                }
               ]}
-              onPress={() => handleMenuItemPress(item)}
+              onPress={item.onPress}
             >
-              <View style={styles.menuLeft}>
-                <View style={styles.menuIconContainer}>
-                  <Ionicons name={item.icon} size={20} color="#666" />
+              <View style={styles.menuItemLeft}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name={item.icon} size={20} color={colors.primary} />
                 </View>
-                <Text style={styles.menuLabel}>{item.label}</Text>
+                <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color="#ccc" />
+              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Logout Button */}
+        {/* Sign Out Button */}
         <TouchableOpacity 
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          disabled={isLoggingOut}
+          style={[styles.signOutButton, { backgroundColor: colors.card }]} 
+          onPress={handleSignOut}
         >
-          {isLoggingOut ? (
-            <ActivityIndicator size="small" color="#ef4444" />
-          ) : (
-            <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-          )}
-          <Text style={styles.logoutText}>
-            {isLoggingOut ? "Signing Out..." : "Sign Out"}
-          </Text>
+          <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
+          <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
+
+        {/* App Version */}
+        <View style={styles.versionContainer}>
+          <Text style={[styles.versionText, { color: colors.textSecondary }]}>App Version 1.0.0</Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -187,236 +146,146 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f8f9fa",
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: "#666",
-    fontWeight: "500",
+    paddingBottom: 30,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 60,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#1a1a1a",
-  },
-  settingsButton: {
-    padding: 8,
-    borderRadius: 12,
-  },
-  profileCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 24,
-    marginTop: 8,
-    padding: 24,
-    borderRadius: 20,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    paddingBottom: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 5,
+    elevation: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: '#FFF',
+    textAlign: 'center',
+  },
+  personalInfoCard: {
+    padding: 24,
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    alignItems: "center",
   },
   avatarContainer: {
-    position: "relative",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: "#ff6b35",
-  },
-  editAvatarButton: {
-    position: "absolute",
-    bottom: 4,
-    right: 4,
-    backgroundColor: "#ff6b35",
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#fff",
+    justifyContent: "center",
   },
   userInfo: {
     alignItems: "center",
     marginBottom: 20,
   },
   userName: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
-    color: "#1a1a1a",
-    marginBottom: 4,
+    marginBottom: 8,
     textAlign: "center",
   },
   userEmail: {
     fontSize: 16,
-    color: "#666",
-    marginBottom: 4,
+    marginBottom: 6,
     textAlign: "center",
   },
   memberSince: {
     fontSize: 14,
-    color: "#999",
     textAlign: "center",
   },
   editProfileButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: "#fff5f2",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#ff6b35",
+    borderRadius: 25,
     gap: 8,
   },
   editProfileText: {
+    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-    color: "#ff6b35",
-  },
-  statsContainer: {
-    backgroundColor: "#fff",
-    marginHorizontal: 24,
-    marginTop: 24,
-    borderRadius: 20,
-    paddingVertical: 24,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  statItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ff6b35",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: "#f0f0f0",
   },
   menuContainer: {
-    backgroundColor: "#fff",
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     marginTop: 24,
-    borderRadius: 20,
-    overflow: "hidden",
+    borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 3,
-  },
-  menuTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1a1a1a",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
+    elevation: 4,
+    overflow: "hidden",
   },
   menuItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
+    justifyContent: "space-between",
     paddingVertical: 18,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#f8f9fa",
   },
   lastMenuItem: {
     borderBottomWidth: 0,
   },
-  menuLeft: {
+  menuItemLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    flex: 1,
   },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "#f8f9fa",
-    justifyContent: "center",
+  iconContainer: {
+    width: 32,
     alignItems: "center",
   },
-  menuLabel: {
+  menuItemText: {
     fontSize: 16,
-    color: "#333",
+    marginLeft: 12,
     fontWeight: "500",
   },
-  logoutButton: {
+  signOutButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     marginTop: 24,
-    paddingVertical: 18,
+    marginBottom: 16,
+    padding: 18,
     borderRadius: 16,
-    gap: 12,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: "#ffe5e5",
+    elevation: 4,
+    gap: 8,
   },
-  logoutText: {
+  signOutText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#ef4444",
+    color: "#FF3B30",
+  },
+  versionContainer: {
+    alignItems: "center",
+    marginTop: 8,
+  },
+  versionText: {
+    fontSize: 14,
   },
 });

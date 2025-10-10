@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../contexts/CartContext';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../contexts/ThemeContext'; // Import theme hook
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ const getDeviceHeightType = () => {
 const CartScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme(); // Get theme colors
   const { 
     cart, 
     removeItem, 
@@ -150,6 +152,8 @@ const CartScreen = () => {
         padding: 14,
         borderRadius: 12,
         marginBottom: 10,
+        backgroundColor: colors.card,
+        borderColor: colors.border,
       }]}>
         <View style={styles.cartItemContent}>
           {item.image ? (
@@ -166,37 +170,53 @@ const CartScreen = () => {
               width: 70,
               height: 70,
               borderRadius: 8,
+              backgroundColor: colors.background,
             }]}>
-              <Ionicons name="fast-food" size={20} color="#999" />
+              <Ionicons name="fast-food" size={20} color={colors.textSecondary} />
             </View>
           )}
           
           <View style={[styles.cartItemDetails, { marginLeft: 12 }]}>
             <View style={styles.itemHeader}>
-              <Text style={[styles.cartItemName, { fontSize: getSubtitleSize() }]} numberOfLines={1}>
+              <Text style={[styles.cartItemName, { 
+                fontSize: getSubtitleSize(),
+                color: colors.text 
+              }]} numberOfLines={1}>
                 {item.name}
               </Text>
               <TouchableOpacity 
                 onPress={() => removeItem(item.id)} 
                 style={styles.removeButton}
               >
-                <Ionicons name="close" size={18} color="#999" />
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
-            <Text style={[styles.cartItemRestaurant, { fontSize: getBodySize() }]} numberOfLines={1}>
+            <Text style={[styles.cartItemRestaurant, { 
+              fontSize: getBodySize(),
+              color: colors.textSecondary 
+            }]} numberOfLines={1}>
               {item.restaurantName}
             </Text>
             
-            <Text style={[styles.cartItemDescription, { fontSize: getBodySize() }]} numberOfLines={2}>
+            <Text style={[styles.cartItemDescription, { 
+              fontSize: getBodySize(),
+              color: colors.textSecondary 
+            }]} numberOfLines={2}>
               {item.description || "Delicious food item"}
             </Text>
             
             <View style={styles.priceContainer}>
-              <Text style={[styles.cartItemPrice, { fontSize: getSubtitleSize() }]}>
+              <Text style={[styles.cartItemPrice, { 
+                fontSize: getSubtitleSize(),
+                color: colors.text 
+              }]}>
                 {formatPriceDisplay(item.price)}
               </Text>
-              <Text style={[styles.itemTotal, { fontSize: getSubtitleSize() }]}>
+              <Text style={[styles.itemTotal, { 
+                fontSize: getSubtitleSize(),
+                color: colors.primary 
+              }]}>
                 ₹{itemTotal.toFixed(2)}
               </Text>
             </View>
@@ -206,6 +226,8 @@ const CartScreen = () => {
         <View style={[styles.quantityContainer, {
           borderRadius: 20,
           padding: 2,
+          backgroundColor: colors.background,
+          borderColor: colors.border,
         }]}>
           <TouchableOpacity 
             style={[
@@ -213,6 +235,7 @@ const CartScreen = () => {
               { 
                 borderRadius: 15,
                 minWidth: 30,
+                backgroundColor: colors.card,
               },
               item.quantity <= 1 && styles.quantityButtonDisabled
             ]}
@@ -222,12 +245,15 @@ const CartScreen = () => {
             <Ionicons 
               name="remove" 
               size={16} 
-              color={item.quantity <= 1 ? "#ccc" : "#ff6b35"} 
+              color={item.quantity <= 1 ? colors.textSecondary : colors.primary} 
             />
           </TouchableOpacity>
           
           <View style={[styles.quantityDisplay, { minWidth: 35 }]}>
-            <Text style={[styles.quantityText, { fontSize: getBodySize() }]}>
+            <Text style={[styles.quantityText, { 
+              fontSize: getBodySize(),
+              color: colors.text 
+            }]}>
               {item.quantity}
             </Text>
           </View>
@@ -238,11 +264,12 @@ const CartScreen = () => {
               { 
                 borderRadius: 15,
                 minWidth: 30,
+                backgroundColor: colors.card,
               }
             ]}
             onPress={() => incrementItem(item.id)}
           >
-            <Ionicons name="add" size={16} color="#ff6b35" />
+            <Ionicons name="add" size={16} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -298,22 +325,29 @@ const CartScreen = () => {
     };
 
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={[styles.emptyContainer, { 
           paddingTop: getTopPadding() + 20, // Added top padding for empty state
-          paddingBottom: getBottomPadding() 
+          paddingBottom: getBottomPadding(),
+          backgroundColor: colors.background,
         }]}>
           <View style={styles.emptyIllustration}>
             <Ionicons 
               name="cart-outline" 
               size={getEmptyIconSize()} 
-              color="#e0e0e0" 
+              color={colors.textSecondary} 
             />
           </View>
-          <Text style={[styles.emptyTitle, { fontSize: getTitleSize() }]}>
+          <Text style={[styles.emptyTitle, { 
+            fontSize: getTitleSize(),
+            color: colors.text 
+          }]}>
             Your cart feels lonely
           </Text>
-          <Text style={[styles.emptySubtitle, { fontSize: getBodySize() }]}>
+          <Text style={[styles.emptySubtitle, { 
+            fontSize: getBodySize(),
+            color: colors.textSecondary 
+          }]}>
             Add some delicious food from our restaurants
           </Text>
           <TouchableOpacity 
@@ -321,6 +355,7 @@ const CartScreen = () => {
               paddingVertical: 14,
               paddingHorizontal: 24,
               borderRadius: 12,
+              backgroundColor: colors.primary,
             }]}
             onPress={handleContinueShopping}
           >
@@ -335,22 +370,30 @@ const CartScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        backgroundColor={colors.background} 
+        barStyle={colors.isDark ? 'light-content' : 'dark-content'} 
+      />
       
       {/* Header */}
       <View style={[styles.header, {
         paddingTop: getTopPadding(), // Dynamic top padding based on safe area
         paddingBottom: 12,
+        backgroundColor: colors.card,
+        borderBottomColor: colors.border,
       }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
         
-        <Text style={[styles.headerTitle, { fontSize: getTitleSize() }]}>
+        <Text style={[styles.headerTitle, { 
+          fontSize: getTitleSize(),
+          color: colors.text 
+        }]}>
           My Cart ({totalItems})
         </Text>
         
@@ -362,23 +405,38 @@ const CartScreen = () => {
           <Ionicons 
             name="trash-outline" 
             size={20} 
-            color={isClearing ? "#ccc" : "#ff4444"} 
+            color={isClearing ? colors.textSecondary : colors.error} 
           />
         </TouchableOpacity>
       </View>
 
-      {/* Restaurant Info */}
+      {/* Restaurant Info - Fixed for better visibility */}
       {cart.length > 0 && (
         <View style={[styles.restaurantHeader, {
           padding: 12,
           borderRadius: 10,
           marginTop: 12,
           marginHorizontal: 16,
+          backgroundColor: colors.isDark ? 'rgba(0, 168, 80, 0.15)' : '#fff8f6',
+          borderLeftColor: colors.primary,
         }]}>
-          <Ionicons name="restaurant" size={16} color="#666" />
-          <Text style={[styles.restaurantName, { fontSize: getBodySize() }]} numberOfLines={1}>
-            Ordering from: {cart[0]?.restaurantName || 'Restaurant'}
-          </Text>
+          <View style={styles.restaurantHeaderContent}>
+            <Ionicons name="restaurant" size={16} color={colors.primary} />
+            <Text style={[styles.restaurantLabel, { 
+              fontSize: getBodySize(),
+              color: colors.textSecondary,
+              marginRight: 4,
+            }]}>
+              Ordering from:
+            </Text>
+            <Text style={[styles.restaurantName, { 
+              fontSize: getBodySize(),
+              color: colors.primary,
+              fontWeight: '600',
+            }]} numberOfLines={1}>
+              {cart[0]?.restaurantName || 'Restaurant'}
+            </Text>
+          </View>
         </View>
       )}
 
@@ -392,7 +450,8 @@ const CartScreen = () => {
           styles.listContent,
           { 
             paddingTop: 8, // Added top padding for the list
-            paddingBottom: getBottomPadding() 
+            paddingBottom: getBottomPadding(),
+            backgroundColor: colors.background,
           }
         ]}
         style={styles.list}
@@ -401,46 +460,78 @@ const CartScreen = () => {
       {/* Order Summary */}
       <View style={[styles.footer, {
         padding: 16,
+        backgroundColor: colors.card,
+        borderTopColor: colors.border,
       }]}>
         <View style={[styles.summaryContainer, { marginBottom: 16 }]}>
-          <Text style={[styles.summaryTitle, { fontSize: getTitleSize() }]}>
+          <Text style={[styles.summaryTitle, { 
+            fontSize: getTitleSize(),
+            color: colors.text 
+          }]}>
             Order Summary
           </Text>
           
           <View style={[styles.summaryRow, { marginBottom: 6 }]}>
-            <Text style={[styles.summaryLabel, { fontSize: getBodySize() }]}>
+            <Text style={[styles.summaryLabel, { 
+              fontSize: getBodySize(),
+              color: colors.textSecondary 
+            }]}>
               Subtotal ({totalItems} items)
             </Text>
-            <Text style={[styles.summaryValue, { fontSize: getBodySize() }]}>
+            <Text style={[styles.summaryValue, { 
+              fontSize: getBodySize(),
+              color: colors.text 
+            }]}>
               {formattedSubtotal}
             </Text>
           </View>
           
           <View style={[styles.summaryRow, { marginBottom: 6 }]}>
-            <Text style={[styles.summaryLabel, { fontSize: getBodySize() }]}>
+            <Text style={[styles.summaryLabel, { 
+              fontSize: getBodySize(),
+              color: colors.textSecondary 
+            }]}>
               Delivery Fee
             </Text>
-            <Text style={[styles.summaryValue, { fontSize: getBodySize() }]}>
+            <Text style={[styles.summaryValue, { 
+              fontSize: getBodySize(),
+              color: colors.text 
+            }]}>
               {formattedDeliveryFee}
             </Text>
           </View>
           
           <View style={[styles.summaryRow, { marginBottom: 6 }]}>
-            <Text style={[styles.summaryLabel, { fontSize: getBodySize() }]}>
+            <Text style={[styles.summaryLabel, { 
+              fontSize: getBodySize(),
+              color: colors.textSecondary 
+            }]}>
               Tax (5%)
             </Text>
-            <Text style={[styles.summaryValue, { fontSize: getBodySize() }]}>
+            <Text style={[styles.summaryValue, { 
+              fontSize: getBodySize(),
+              color: colors.text 
+            }]}>
               {formattedTax}
             </Text>
           </View>
           
-          <View style={[styles.divider, { marginVertical: 10 }]} />
+          <View style={[styles.divider, { 
+            marginVertical: 10,
+            backgroundColor: colors.border 
+          }]} />
           
           <View style={styles.totalRow}>
-            <Text style={[styles.totalLabel, { fontSize: getSubtitleSize() }]}>
+            <Text style={[styles.totalLabel, { 
+              fontSize: getSubtitleSize(),
+              color: colors.text 
+            }]}>
               Total Amount
             </Text>
-            <Text style={[styles.totalValue, { fontSize: getTitleSize() }]}>
+            <Text style={[styles.totalValue, { 
+              fontSize: getTitleSize(),
+              color: colors.primary 
+            }]}>
               {formattedTotal}
             </Text>
           </View>
@@ -450,6 +541,7 @@ const CartScreen = () => {
           style={[styles.checkoutButton, {
             borderRadius: 12,
             paddingVertical: 16,
+            backgroundColor: colors.primary,
           }]}
           onPress={handleCheckout}
         >
@@ -473,19 +565,15 @@ const CartScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -499,7 +587,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontWeight: 'bold',
-    color: '#333',
     textAlign: 'center',
   },
   clearButton: {
@@ -509,19 +596,22 @@ const styles = StyleSheet.create({
   restaurantHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff8f6',
     borderLeftWidth: 3,
-    borderLeftColor: '#ff6b35',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
+  restaurantHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  restaurantLabel: {
+    // Styles handled inline
+  },
   restaurantName: {
-    fontWeight: '600',
-    color: '#333',
-    marginLeft: 8,
     flex: 1,
   },
   list: {
@@ -535,19 +625,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
-    backgroundColor: '#f8f9fa',
   },
   emptyIllustration: {
     marginBottom: 20,
   },
   emptyTitle: {
     fontWeight: 'bold',
-    color: '#333',
     textAlign: 'center',
     marginBottom: 8,
   },
   emptySubtitle: {
-    color: '#666',
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 20,
@@ -556,7 +643,6 @@ const styles = StyleSheet.create({
   shoppingButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ff6b35',
     gap: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -569,7 +655,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cartItem: {
-    backgroundColor: '#fff',
     marginHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -577,7 +662,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#f8f8f8',
   },
   cartItemContent: {
     flexDirection: 'row',
@@ -587,7 +671,6 @@ const styles = StyleSheet.create({
     // Styles handled inline
   },
   cartItemImagePlaceholder: {
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -602,7 +685,6 @@ const styles = StyleSheet.create({
   },
   cartItemName: {
     fontWeight: '600',
-    color: '#333',
     flex: 1,
     marginRight: 8,
   },
@@ -611,11 +693,9 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   cartItemRestaurant: {
-    color: '#666',
     marginBottom: 4,
   },
   cartItemDescription: {
-    color: '#999',
     lineHeight: 14,
     marginBottom: 8,
   },
@@ -626,24 +706,19 @@ const styles = StyleSheet.create({
   },
   cartItemPrice: {
     fontWeight: 'bold',
-    color: '#333',
   },
   itemTotal: {
     fontWeight: 'bold',
-    color: '#ff6b35',
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fa',
     alignSelf: 'center',
     borderWidth: 1,
-    borderColor: '#eee',
   },
   quantityButton: {
     padding: 6,
-    backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -652,7 +727,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButtonDisabled: {
-    backgroundColor: '#f9f9f9',
+    // Background handled inline
   },
   quantityDisplay: {
     alignItems: 'center',
@@ -660,12 +735,9 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     fontWeight: 'bold',
-    color: '#333',
   },
   footer: {
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.1,
@@ -677,7 +749,6 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 14,
   },
   summaryRow: {
@@ -686,15 +757,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryLabel: {
-    color: '#666',
+    // Color handled inline
   },
   summaryValue: {
     fontWeight: '500',
-    color: '#333',
   },
   divider: {
     height: 1,
-    backgroundColor: '#f0f0f0',
   },
   totalRow: {
     flexDirection: 'row',
@@ -703,14 +772,11 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontWeight: 'bold',
-    color: '#333',
   },
   totalValue: {
     fontWeight: 'bold',
-    color: '#ff6b35',
   },
   checkoutButton: {
-    backgroundColor: '#ff6b35',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,

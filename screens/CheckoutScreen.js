@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../contexts/CartContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../contexts/ThemeContext'; // Import theme hook
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,6 +23,7 @@ const CheckoutScreen = ({ route, navigation }) => {
   const { clearCart } = useCart();
   const { cartItems, subtotal, deliveryFee, tax, grandTotal } = route.params;
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme(); // Get theme colors
   
   const [customerName, setCustomerName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -77,119 +79,155 @@ const CheckoutScreen = ({ route, navigation }) => {
     <TouchableOpacity 
       style={[
         styles.paymentOption, 
-        paymentMethod === method && styles.paymentOptionSelected
+        paymentMethod === method && styles.paymentOptionSelected,
+        { 
+          backgroundColor: colors.card,
+          borderColor: paymentMethod === method ? colors.primary : colors.border,
+        }
       ]}
       onPress={() => setPaymentMethod(method)}
     >
       <View style={styles.paymentLeft}>
         <View style={[
           styles.paymentIconContainer,
-          paymentMethod === method && styles.paymentIconContainerSelected
+          paymentMethod === method && styles.paymentIconContainerSelected,
+          { 
+            backgroundColor: paymentMethod === method ? 
+              (colors.isDark ? 'rgba(0, 168, 80, 0.2)' : '#ffeae5') : 
+              colors.background 
+          }
         ]}>
           <Ionicons 
             name={icon} 
             size={20} 
-            color={paymentMethod === method ? '#ff6b35' : '#666'} 
+            color={paymentMethod === method ? colors.primary : colors.textSecondary} 
           />
         </View>
         <View style={styles.paymentTextContainer}>
-          <Text style={styles.paymentTitle}>{title}</Text>
-          <Text style={styles.paymentDescription}>{description}</Text>
+          <Text style={[styles.paymentTitle, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.paymentDescription, { color: colors.textSecondary }]}>{description}</Text>
         </View>
       </View>
       <View style={[
         styles.radioOuter,
-        paymentMethod === method && styles.radioOuterSelected
+        paymentMethod === method && styles.radioOuterSelected,
+        { borderColor: paymentMethod === method ? colors.primary : colors.border }
       ]}>
-        {paymentMethod === method && <View style={styles.radioInner} />}
+        {paymentMethod === method && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        backgroundColor={colors.background} 
+        barStyle={colors.isDark ? 'light-content' : 'dark-content'} 
+      />
       
       <ScrollView 
-        style={styles.container} 
+        style={[styles.container, { backgroundColor: colors.background }]} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: getBottomPadding() }}
       >
         {/* Header */}
-        <View style={[styles.header, { paddingTop: getTopPadding() }]}>
+        <View style={[styles.header, { 
+          paddingTop: getTopPadding(),
+          backgroundColor: colors.card,
+          borderBottomColor: colors.border,
+        }]}>
           <TouchableOpacity 
             onPress={() => navigation.goBack()} 
             style={styles.backButton}
           >
-            <Ionicons name="chevron-back" size={24} color="#333" />
-            <Text style={styles.backButtonText}>Cart</Text>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+            <Text style={[styles.backButtonText, { color: colors.text }]}>Cart</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Checkout</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Checkout</Text>
           <View style={styles.headerRight} />
         </View>
 
         {/* Pickup Information */}
-        <View style={styles.section}>
+        <View style={[styles.section, { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        }]}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="storefront" size={20} color="#ff6b35" />
-            <Text style={styles.sectionTitle}>Pickup Information</Text>
+            <Ionicons name="storefront" size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Pickup Information</Text>
           </View>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Full Name *</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Full Name *</Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { 
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+                color: colors.text,
+              }]}
               placeholder="Enter your full name"
               value={customerName}
               onChangeText={setCustomerName}
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Phone Number *</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Phone Number *</Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { 
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+                color: colors.text,
+              }]}
               placeholder="Enter your phone number"
               value={phoneNumber}
               onChangeText={setPhoneNumber}
               keyboardType="phone-pad"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Special Instructions (Optional)</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Special Instructions (Optional)</Text>
             <TextInput
-              style={[styles.textInput, styles.textArea]}
+              style={[styles.textInput, styles.textArea, { 
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+                color: colors.text,
+              }]}
               placeholder="Any special instructions for your order..."
               value={specialInstructions}
               onChangeText={setSpecialInstructions}
               multiline
               numberOfLines={2}
               textAlignVertical="top"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
         </View>
 
         {/* Order Summary */}
-        <View style={styles.section}>
+        <View style={[styles.section, { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        }]}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="receipt" size={20} color="#ff6b35" />
-            <Text style={styles.sectionTitle}>Order Summary</Text>
+            <Ionicons name="receipt" size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Summary</Text>
           </View>
           
           {cartItems.map((item, index) => (
             <View key={item.id} style={[
               styles.orderItem,
-              index === cartItems.length - 1 && styles.lastOrderItem
+              index === cartItems.length - 1 && styles.lastOrderItem,
+              { borderBottomColor: colors.border }
             ]}>
               <View style={styles.itemLeft}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+                <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                <Text style={[styles.itemQuantity, { color: colors.textSecondary }]}>Qty: {item.quantity}</Text>
               </View>
-              <Text style={styles.itemPrice}>
+              <Text style={[styles.itemPrice, { color: colors.text }]}>
                 ₹{(parseFloat(item.price?.replace('₹', '') || item.price || 0) * item.quantity).toFixed(2)}
               </Text>
             </View>
@@ -197,10 +235,13 @@ const CheckoutScreen = ({ route, navigation }) => {
         </View>
 
         {/* Payment Method */}
-        <View style={styles.section}>
+        <View style={[styles.section, { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        }]}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="card" size={20} color="#ff6b35" />
-            <Text style={styles.sectionTitle}>Payment Method</Text>
+            <Ionicons name="card" size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Payment Method</Text>
           </View>
           
           <View style={styles.paymentOptions}>
@@ -214,58 +255,84 @@ const CheckoutScreen = ({ route, navigation }) => {
         </View>
 
         {/* Price Breakdown */}
-        <View style={styles.section}>
+        <View style={[styles.section, { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        }]}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="pricetag" size={20} color="#ff6b35" />
-            <Text style={styles.sectionTitle}>Price Details</Text>
+            <Ionicons name="pricetag" size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Price Details</Text>
           </View>
           
           <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Subtotal ({cartItems.length} items)</Text>
-            <Text style={styles.priceValue}>₹{subtotal.toFixed(2)}</Text>
+            <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>
+              Subtotal ({cartItems.length} items)
+            </Text>
+            <Text style={[styles.priceValue, { color: colors.text }]}>
+              ₹{subtotal.toFixed(2)}
+            </Text>
           </View>
           
           <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Pickup Fee</Text>
-            <Text style={styles.priceValue}>₹{deliveryFee.toFixed(2)}</Text>
+            <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>
+              Pickup Fee
+            </Text>
+            <Text style={[styles.priceValue, { color: colors.text }]}>
+              ₹{deliveryFee.toFixed(2)}
+            </Text>
           </View>
           
           <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Tax (5%)</Text>
-            <Text style={styles.priceValue}>₹{tax.toFixed(2)}</Text>
+            <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>
+              Tax (5%)
+            </Text>
+            <Text style={[styles.priceValue, { color: colors.text }]}>
+              ₹{tax.toFixed(2)}
+            </Text>
           </View>
           
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           
           <View style={[styles.priceRow, styles.grandTotal]}>
-            <Text style={styles.grandTotalLabel}>Total Amount</Text>
-            <Text style={styles.grandTotalValue}>₹{grandTotal.toFixed(2)}</Text>
+            <Text style={[styles.grandTotalLabel, { color: colors.text }]}>
+              Total Amount
+            </Text>
+            <Text style={[styles.grandTotalValue, { color: colors.primary }]}>
+              ₹{grandTotal.toFixed(2)}
+            </Text>
           </View>
         </View>
 
         {/* Additional Info */}
-        <View style={styles.infoSection}>
+        <View style={[styles.infoSection, { 
+          backgroundColor: colors.card,
+        }]}>
           <View style={styles.infoItem}>
-            <Ionicons name="time" size={16} color="#666" />
-            <Text style={styles.infoText}>Ready in 15-20 mins</Text>
+            <Ionicons name="time" size={16} color={colors.textSecondary} />
+            <Text style={[styles.infoText, { color: colors.textSecondary }]}>Ready in 15-20 mins</Text>
           </View>
           <View style={styles.infoItem}>
-            <Ionicons name="storefront" size={16} color="#666" />
-            <Text style={styles.infoText}>Store Pickup</Text>
+            <Ionicons name="storefront" size={16} color={colors.textSecondary} />
+            <Text style={[styles.infoText, { color: colors.textSecondary }]}>Store Pickup</Text>
           </View>
           <View style={styles.infoItem}>
-            <Ionicons name="shield-checkmark" size={16} color="#666" />
-            <Text style={styles.infoText}>Secure payment</Text>
+            <Ionicons name="shield-checkmark" size={16} color={colors.textSecondary} />
+            <Text style={[styles.infoText, { color: colors.textSecondary }]}>Secure payment</Text>
           </View>
         </View>
       </ScrollView>
 
       {/* Fixed Place Order Button */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
+      <View style={[styles.footer, { 
+        backgroundColor: colors.card,
+        borderTopColor: colors.border,
+        paddingBottom: insets.bottom 
+      }]}>
         <TouchableOpacity 
           style={[
             styles.placeOrderButton, 
-            isPlacingOrder && styles.placeOrderButtonDisabled
+            isPlacingOrder && styles.placeOrderButtonDisabled,
+            { backgroundColor: isPlacingOrder ? colors.textSecondary : colors.primary }
           ]}
           onPress={handlePlaceOrder}
           disabled={isPlacingOrder}
@@ -292,18 +359,14 @@ const CheckoutScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
   },
   header: {
-    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -321,19 +384,16 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
     marginLeft: 4,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
   },
   headerRight: {
     width: 32,
   },
   section: {
-    backgroundColor: '#fff',
     margin: 16,
     marginBottom: 12,
     padding: 20,
@@ -344,7 +404,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#f8f8f8',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -354,7 +413,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
     marginLeft: 8,
   },
   inputGroup: {
@@ -363,17 +421,13 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#fafafa',
-    color: '#333',
   },
   textArea: {
     minHeight: 80,
@@ -384,7 +438,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f8f8f8',
   },
   lastOrderItem: {
     borderBottomWidth: 0,
@@ -395,17 +448,14 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#333',
     marginBottom: 4,
   },
   itemQuantity: {
     fontSize: 13,
-    color: '#666',
   },
   itemPrice: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
   },
   paymentOptions: {
     marginTop: 8,
@@ -416,14 +466,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e8e8e8',
     borderRadius: 12,
     marginBottom: 12,
-    backgroundColor: '#fafafa',
   },
   paymentOptionSelected: {
-    borderColor: '#ff6b35',
-    backgroundColor: '#fff5f2',
+    // Styles handled inline
   },
   paymentLeft: {
     flexDirection: 'row',
@@ -434,13 +481,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   paymentIconContainerSelected: {
-    backgroundColor: '#ffeae5',
+    // Styles handled inline
   },
   paymentTextContainer: {
     flex: 1,
@@ -448,30 +494,26 @@ const styles = StyleSheet.create({
   paymentTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 2,
   },
   paymentDescription: {
     fontSize: 13,
-    color: '#666',
   },
   radioOuter: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#ddd',
     justifyContent: 'center',
     alignItems: 'center',
   },
   radioOuterSelected: {
-    borderColor: '#ff6b35',
+    // Styles handled inline
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#ff6b35',
   },
   priceRow: {
     flexDirection: 'row',
@@ -481,16 +523,13 @@ const styles = StyleSheet.create({
   },
   priceLabel: {
     fontSize: 15,
-    color: '#666',
   },
   priceValue: {
     fontSize: 15,
-    color: '#333',
     fontWeight: '500',
   },
   divider: {
     height: 1,
-    backgroundColor: '#f0f0f0',
     marginVertical: 12,
   },
   grandTotal: {
@@ -499,18 +538,15 @@ const styles = StyleSheet.create({
   grandTotalLabel: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#333',
   },
   grandTotalValue: {
     fontSize: 19,
     fontWeight: 'bold',
-    color: '#ff6b35',
   },
   infoSection: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: 16,
-    backgroundColor: '#fff',
     marginHorizontal: 16,
     borderRadius: 12,
     marginBottom: 20,
@@ -521,13 +557,10 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    color: '#666',
     marginLeft: 6,
   },
   footer: {
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
     paddingHorizontal: 16,
     paddingTop: 12,
     shadowColor: '#000',
@@ -537,12 +570,11 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   placeOrderButton: {
-    backgroundColor: '#ff6b35',
     borderRadius: 14,
     paddingVertical: 18,
   },
   placeOrderButtonDisabled: {
-    backgroundColor: '#ccc',
+    // Background handled inline
   },
   orderButtonContent: {
     flexDirection: 'row',

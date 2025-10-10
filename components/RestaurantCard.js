@@ -8,9 +8,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext'; // Import theme hook
 
 const RestaurantCard = ({ restaurant }) => {
   const navigation = useNavigation();
+  const { colors } = useTheme(); // Get theme colors
 
   const handlePress = () => {
     navigation.navigate('RestaurantDetails', { restaurant });
@@ -18,7 +20,7 @@ const RestaurantCard = ({ restaurant }) => {
 
   // Render rating badge
   const renderRatingBadge = () => (
-    <View style={styles.ratingBadge}>
+    <View style={[styles.ratingBadge, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}>
       <Ionicons name="star" size={12} color="#FFF" />
       <Text style={styles.ratingText}>{restaurant.rating}</Text>
     </View>
@@ -29,7 +31,7 @@ const RestaurantCard = ({ restaurant }) => {
     if (restaurant.image && typeof restaurant.image === 'string' && !restaurant.image.startsWith('http')) {
       return (
         <View style={styles.imageContainer}>
-          <View style={styles.emojiContainer}>
+          <View style={[styles.emojiContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
             <Text style={styles.emojiText}>{restaurant.image}</Text>
           </View>
           {renderRatingBadge()}
@@ -45,7 +47,10 @@ const RestaurantCard = ({ restaurant }) => {
         />
         {renderRatingBadge()}
         {restaurant.isPureVeg && (
-          <View style={styles.vegBadge}>
+          <View style={[styles.vegBadge, { 
+            backgroundColor: colors.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#4CAF50' 
+          }]}>
             <Text style={styles.vegText}>🟢 Pure Veg</Text>
           </View>
         )}
@@ -55,9 +60,9 @@ const RestaurantCard = ({ restaurant }) => {
 
   // Render delivery info chip
   const renderDeliveryChip = () => (
-    <View style={styles.deliveryChip}>
-      <Ionicons name="time-outline" size={12} color="#666" />
-      <Text style={styles.deliveryChipText}>{restaurant.time}</Text>
+    <View style={[styles.deliveryChip, { backgroundColor: colors.background }]}>
+      <Ionicons name="time-outline" size={12} color={colors.textSecondary} />
+      <Text style={[styles.deliveryChipText, { color: colors.textSecondary }]}>{restaurant.time}</Text>
     </View>
   );
 
@@ -66,47 +71,52 @@ const RestaurantCard = ({ restaurant }) => {
     if (!restaurant.discount) return null;
     
     return (
-      <View style={styles.discountBadge}>
-        <Ionicons name="pricetag-outline" size={10} color="#FF6B35" />
-        <Text style={styles.discountText}>{restaurant.discount}</Text>
+      <View style={[styles.discountBadge, { 
+        backgroundColor: colors.isDark ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255, 107, 53, 0.1)' 
+      }]}>
+        <Ionicons name="pricetag-outline" size={10} color={colors.primary} />
+        <Text style={[styles.discountText, { color: colors.primary }]}>{restaurant.discount}</Text>
       </View>
     );
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress}>
+    <TouchableOpacity style={[styles.card, { backgroundColor: colors.card }]} onPress={handlePress}>
       {renderImage()}
       
       <View style={styles.infoContainer}>
         <View style={styles.headerRow}>
-          <Text style={styles.restaurantName} numberOfLines={1}>{restaurant.name}</Text>
-          
+          <Text style={[styles.restaurantName, { color: colors.text }]} numberOfLines={1}>
+            {restaurant.name}
+          </Text>
         </View>
-        
-        {/* <Text style={styles.cuisine} numberOfLines={1}>{restaurant.cuisine}</Text> */}
         
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Ionicons name="star" size={14} color="#FFD700" />
-            <Text style={styles.rating}>{restaurant.rating}</Text>
-            <Text style={styles.reviewsCount}>({restaurant.reviewsCount})</Text>
-          </View>
-          
-          {/* <View style={styles.statSeparator} /> */}
-          
-          <View style={styles.statItem}>
-            {/* <Text style={styles.distance}>{restaurant.distance}</Text> */}
-          </View>
-          
-          {/* <View style={styles.statSeparator} /> */}
-          
-          <View style={styles.statItem}>
-            {/* <Text style={styles.price}>{restaurant.price}</Text> */}
+            <Text style={[styles.rating, { color: colors.text }]}>{restaurant.rating}</Text>
+            <Text style={[styles.reviewsCount, { color: colors.textSecondary }]}>
+              ({restaurant.reviewsCount})
+            </Text>
           </View>
         </View>
         
+        <View style={styles.footer}>
+          {/* {renderDeliveryChip()} */}
+          {/* {renderDiscountBadge()} */}
+        </View>
         
-        
+        {restaurant.noPackagingCharges && (
+          <View style={[styles.offerContainer, { 
+            backgroundColor: colors.isDark ? 'rgba(0, 168, 80, 0.1)' : '#FFF8F6',
+            borderLeftColor: colors.primary 
+          }]}>
+            <Ionicons name="leaf-outline" size={12} color={colors.primary} />
+            <Text style={[styles.offerText, { color: colors.primary }]}>
+              No packaging charges
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -114,7 +124,6 @@ const RestaurantCard = ({ restaurant }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 16,
     elevation: 2,
@@ -134,11 +143,9 @@ const styles = StyleSheet.create({
   emojiContainer: {
     width: '100%',
     height: 160,
-    backgroundColor: '#f8f8f8',
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   emojiText: {
     fontSize: 80,
@@ -149,7 +156,6 @@ const styles = StyleSheet.create({
     left: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -164,12 +170,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#4CAF50',
   },
   vegText: {
     fontSize: 10,
@@ -188,12 +192,10 @@ const styles = StyleSheet.create({
   restaurantName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
     flex: 1,
     marginRight: 8,
   },
   freeDeliveryBadge: {
-    backgroundColor: '#E8F5E8',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -205,7 +207,6 @@ const styles = StyleSheet.create({
   },
   cuisine: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 8,
   },
   statsContainer: {
@@ -228,19 +229,15 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
   },
   reviewsCount: {
     fontSize: 12,
-    color: '#666',
   },
   distance: {
     fontSize: 14,
-    color: '#666',
   },
   price: {
     fontSize: 14,
-    color: '#666',
   },
   footer: {
     flexDirection: 'row',
@@ -251,7 +248,6 @@ const styles = StyleSheet.create({
   deliveryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -259,13 +255,11 @@ const styles = StyleSheet.create({
   },
   deliveryChipText: {
     fontSize: 12,
-    color: '#666',
     fontWeight: '500',
   },
   discountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 107, 53, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -273,23 +267,19 @@ const styles = StyleSheet.create({
   },
   discountText: {
     fontSize: 12,
-    color: '#FF6B35',
     fontWeight: '600',
   },
   offerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8F6',
     paddingHorizontal: 8,
     paddingVertical: 6,
     borderRadius: 6,
     gap: 4,
     borderLeftWidth: 3,
-    borderLeftColor: '#FF6B35',
   },
   offerText: {
     fontSize: 12,
-    color: '#FF6B35',
     fontWeight: '500',
   },
 });

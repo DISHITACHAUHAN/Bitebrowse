@@ -13,12 +13,14 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { useCart } from "../contexts/CartContext";
+import { useTheme } from "../contexts/ThemeContext"; // Import theme hook
 
 const RestaurantDetails = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { restaurant } = route.params;
   const { addItem, removeItem, incrementItem, decrementItem, cart } = useCart();
+  const { colors } = useTheme(); // Get theme colors
   const scrollY = useRef(new Animated.Value(0)).current;
 
   // Sample menu data
@@ -143,13 +145,18 @@ const RestaurantDetails = () => {
     const quantity = existingItem ? existingItem.quantity : 0;
 
     return (
-      <View style={styles.menuItem}>
+      <View style={[styles.menuItem, { 
+        backgroundColor: colors.card,
+        borderColor: colors.border 
+      }]}>
         <View style={styles.menuItemContent}>
           <View style={styles.menuItemInfo}>
             {item.bestseller && (
-              <View style={styles.bestsellerTag}>
+              <View style={[styles.bestsellerTag, { backgroundColor: colors.isDark ? '#2a2000' : '#FFF8E1' }]}>
                 <Ionicons name="trophy" size={12} color="#FFD700" />
-                <Text style={styles.bestsellerText}>Bestseller</Text>
+                <Text style={[styles.bestsellerText, { color: colors.isDark ? '#FFD700' : '#FF8F00' }]}>
+                  Bestseller
+                </Text>
               </View>
             )}
 
@@ -162,10 +169,14 @@ const RestaurantDetails = () => {
               />
             </View>
 
-            <Text style={styles.menuItemName}>{item.name}</Text>
-            <Text style={styles.menuItemPrice}>{item.price}</Text>
+            <Text style={[styles.menuItemName, { color: colors.text }]}>
+              {item.name}
+            </Text>
+            <Text style={[styles.menuItemPrice, { color: colors.text }]}>
+              {item.price}
+            </Text>
             {item.description ? (
-              <Text style={styles.menuItemDescription}>
+              <Text style={[styles.menuItemDescription, { color: colors.textSecondary }]}>
                 {item.description}
               </Text>
             ) : null}
@@ -187,14 +198,14 @@ const RestaurantDetails = () => {
                 resizeMode="cover"
               />
             ) : (
-              <View style={styles.menuItemImagePlaceholder}>
-                <Ionicons name="fast-food" size={24} color="#999" />
+              <View style={[styles.menuItemImagePlaceholder, { backgroundColor: colors.background }]}>
+                <Ionicons name="fast-food" size={24} color={colors.textSecondary} />
               </View>
             )}
 
             <View style={styles.quantityContainer}>
               {quantity > 0 ? (
-                <View style={styles.quantityControls}>
+                <View style={[styles.quantityControls, { backgroundColor: colors.primary }]}>
                   <TouchableOpacity
                     style={styles.quantityButton}
                     onPress={() => handleDecrement(item.id)}
@@ -211,7 +222,7 @@ const RestaurantDetails = () => {
                 </View>
               ) : (
                 <TouchableOpacity
-                  style={styles.addButton}
+                  style={[styles.addButton, { backgroundColor: colors.primary }]}
                   onPress={() => handleAdd(item)}
                 >
                   <Text style={styles.addButtonText}>ADD</Text>
@@ -227,8 +238,10 @@ const RestaurantDetails = () => {
   const renderCategory = (category, index) => (
     <View key={index} style={styles.categorySection}>
       <View style={styles.categoryHeader}>
-        <Text style={styles.categoryTitle}>{category}</Text>
-        <Text style={styles.categoryItemCount}>
+        <Text style={[styles.categoryTitle, { color: colors.text }]}>
+          {category}
+        </Text>
+        <Text style={[styles.categoryItemCount, { color: colors.textSecondary }]}>
           ({groupedMenu[category].length} items)
         </Text>
       </View>
@@ -261,7 +274,11 @@ const RestaurantDetails = () => {
       typeof restaurant.image === "string" &&
       !restaurant.image.startsWith("http")
     ) {
-      return <Text style={styles.emojiImage}>{restaurant.image}</Text>;
+      return (
+        <View style={[styles.emojiContainer, { backgroundColor: colors.card }]}>
+          <Text style={styles.emojiImage}>{restaurant.image}</Text>
+        </View>
+      );
     }
     return (
       <Image
@@ -277,13 +294,21 @@ const RestaurantDetails = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="transparent" translucent />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        backgroundColor="transparent" 
+        translucent 
+        barStyle={colors.isDark ? 'light-content' : 'dark-content'}
+      />
 
       {/* Animated Header Background */}
       <Animated.View
-        style={[styles.animatedHeader, { opacity: headerBackgroundOpacity }]}
+        style={[styles.animatedHeader, { 
+          opacity: headerBackgroundOpacity,
+          backgroundColor: colors.card 
+        }]}
       />
+
 
       <Animated.ScrollView
         style={styles.scrollView}
@@ -298,7 +323,6 @@ const RestaurantDetails = () => {
         <View style={styles.header}>
           {renderImage()}
           <View style={styles.headerOverlay}>
-
             <View style={styles.headerContent}>
               <Text style={styles.restaurantName}>{restaurant.name}</Text>
 
@@ -316,19 +340,23 @@ const RestaurantDetails = () => {
         </View>
 
         {/* Safety Info Banner */}
-        <View style={styles.safetyBanner}>
+        <View style={[styles.safetyBanner, { backgroundColor: colors.isDark ? '#1b2a1b' : '#F1F8E9' }]}>
           <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
-          <Text style={styles.safetyText}>
+          <Text style={[styles.safetyText, { color: colors.isDark ? '#a5d6a7' : '#4CAF50' }]}>
             Follows all safety measures for a safe dining experience
           </Text>
         </View>
 
         {/* Menu Sections */}
         <View style={styles.menuContainer}>
-          <View style={styles.menuHeader}>
-            <Text style={styles.menuTitle}>Menu</Text>
+          <View style={[styles.menuHeader, { 
+            borderBottomColor: colors.border 
+          }]}>
+            <Text style={[styles.menuTitle, { color: colors.text }]}>
+              Menu
+            </Text>
             {totalItems > 0 && (
-              <View style={styles.cartBadge}>
+              <View style={[styles.cartBadge, { backgroundColor: colors.primary }]}>
                 <Text style={styles.cartBadgeText}>{totalItems}</Text>
               </View>
             )}
@@ -340,8 +368,10 @@ const RestaurantDetails = () => {
             )
           ) : (
             <View style={styles.noMenuContainer}>
-              <Ionicons name="restaurant" size={64} color="#ddd" />
-              <Text style={styles.noMenuText}>Menu items loading...</Text>
+              <Ionicons name="restaurant" size={64} color={colors.textSecondary} />
+              <Text style={[styles.noMenuText, { color: colors.textSecondary }]}>
+                Menu items loading...
+              </Text>
             </View>
           )}
         </View>
@@ -352,20 +382,25 @@ const RestaurantDetails = () => {
       {/* Floating Cart Button */}
       {totalItems > 0 && (
         <TouchableOpacity
-          style={styles.floatingCart}
+          style={[styles.floatingCart, { 
+            backgroundColor: colors.card,
+            shadowColor: colors.text 
+          }]}
           onPress={() => navigation.navigate("Cart")}
         >
           <View style={styles.cartContent}>
-            <View style={styles.cartBadgeFloating}>
+            <View style={[styles.cartBadgeFloating, { backgroundColor: colors.primary }]}>
               <Text style={styles.cartBadgeText}>{totalItems}</Text>
             </View>
             <View style={styles.cartInfo}>
-              <Text style={styles.cartCount}>
+              <Text style={[styles.cartCount, { color: colors.text }]}>
                 View Cart • {totalItems} items
               </Text>
-              <Text style={styles.cartTotal}>₹{totalAmount}</Text>
+              <Text style={[styles.cartTotal, { color: colors.text }]}>
+                ₹{totalAmount}
+              </Text>
             </View>
-            <View style={styles.viewCartButton}>
+            <View style={[styles.viewCartButton, { backgroundColor: colors.primary }]}>
               <Text style={styles.viewCartText}>PROCEED</Text>
               <Ionicons name="chevron-forward" size={16} color="#fff" />
             </View>
@@ -376,12 +411,9 @@ const RestaurantDetails = () => {
   );
 };
 
-// ... (styles remain the same)
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   animatedHeader: {
     position: "absolute",
@@ -389,7 +421,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 100,
-    backgroundColor: "#fff",
     zIndex: 1000,
   },
   scrollView: {
@@ -403,13 +434,16 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  emojiImage: {
+  emojiContainer: {
     width: "100%",
     height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emojiImage: {
     fontSize: 100,
     textAlign: "center",
     textAlignVertical: "center",
-    backgroundColor: "#f8f8f8",
   },
   headerOverlay: {
     position: "absolute",
@@ -427,7 +461,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
@@ -469,69 +502,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     opacity: 0.9,
   },
-  restaurantCuisine: {
-    fontSize: 16,
-    color: "#fff",
-    marginBottom: 12,
-    opacity: 0.9,
-  },
-  deliveryInfo: {
-    flexDirection: "row",
-    marginBottom: 12,
-    flexWrap: "wrap",
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 16,
-    marginBottom: 4,
-  },
-  infoText: {
-    fontSize: 14,
-    color: "#fff",
-    marginLeft: 4,
-    opacity: 0.9,
-  },
-  tagContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  discountTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 87, 34, 0.9)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 4,
-  },
-  discountText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "600",
-    marginLeft: 4,
-  },
-  vegTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(76, 175, 80, 0.9)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 4,
-  },
-  vegText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "600",
-    marginLeft: 4,
-  },
   safetyBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F1F8E9",
     padding: 12,
     marginHorizontal: 16,
     marginTop: -20,
@@ -544,7 +517,6 @@ const styles = StyleSheet.create({
   },
   safetyText: {
     fontSize: 12,
-    color: "#4CAF50",
     marginLeft: 8,
     fontWeight: "500",
   },
@@ -559,15 +531,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   menuTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
   },
   cartBadge: {
-    backgroundColor: "#E23E3E",
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -591,18 +560,14 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#333",
   },
   categoryItemCount: {
     fontSize: 14,
-    color: "#666",
   },
   menuItem: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#f0f0f0",
   },
   menuItemContent: {
     flexDirection: "row",
@@ -615,7 +580,6 @@ const styles = StyleSheet.create({
   bestsellerTag: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF8E1",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -624,7 +588,6 @@ const styles = StyleSheet.create({
   },
   bestsellerText: {
     fontSize: 10,
-    color: "#FF8F00",
     fontWeight: "600",
     marginLeft: 4,
   },
@@ -648,18 +611,15 @@ const styles = StyleSheet.create({
   menuItemName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
     marginBottom: 4,
   },
   menuItemPrice: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 8,
   },
   menuItemDescription: {
     fontSize: 13,
-    color: "#666",
     lineHeight: 18,
   },
   menuItemImage: {
@@ -682,7 +642,6 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
     marginBottom: 8,
-    backgroundColor: "#f5f5f5",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -692,7 +651,6 @@ const styles = StyleSheet.create({
   quantityControls: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E23E3E",
     borderRadius: 20,
     padding: 4,
   },
@@ -708,7 +666,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   addButton: {
-    backgroundColor: "#E23E3E",
     borderRadius: 6,
     paddingHorizontal: 20,
     paddingVertical: 8,
@@ -724,7 +681,6 @@ const styles = StyleSheet.create({
   },
   noMenuText: {
     textAlign: "center",
-    color: "#666",
     fontSize: 16,
     marginTop: 12,
   },
@@ -736,11 +692,9 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: "#333",
     borderRadius: 12,
     padding: 16,
     elevation: 8,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -750,7 +704,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cartBadgeFloating: {
-    backgroundColor: "#E23E3E",
     borderRadius: 10,
     width: 24,
     height: 24,
@@ -763,19 +716,16 @@ const styles = StyleSheet.create({
   },
   cartCount: {
     fontSize: 14,
-    color: "#fff",
     opacity: 0.9,
   },
   cartTotal: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#fff",
     marginTop: 2,
   },
   viewCartButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E23E3E",
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
