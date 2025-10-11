@@ -130,6 +130,7 @@ const HomeStack = () => {
           headerLeft: () => <CustomBackButton />,
           headerRight: () => <CartIcon />,
           headerBackTitle: 'Back',
+          headerShown:false,
         })}
       />
 

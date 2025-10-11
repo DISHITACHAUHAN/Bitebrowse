@@ -8,17 +8,16 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext'; // Import theme hook
+import { useTheme } from '../contexts/ThemeContext';
 
 const RestaurantCard = ({ restaurant }) => {
   const navigation = useNavigation();
-  const { colors } = useTheme(); // Get theme colors
+  const { colors } = useTheme();
 
   const handlePress = () => {
     navigation.navigate('RestaurantDetails', { restaurant });
   };
 
-  // Render rating badge
   const renderRatingBadge = () => (
     <View style={[styles.ratingBadge, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}>
       <Ionicons name="star" size={12} color="#FFF" />
@@ -26,7 +25,6 @@ const RestaurantCard = ({ restaurant }) => {
     </View>
   );
 
-  // Render image with overlay
   const renderImage = () => {
     if (restaurant.image && typeof restaurant.image === 'string' && !restaurant.image.startsWith('http')) {
       return (
@@ -46,36 +44,6 @@ const RestaurantCard = ({ restaurant }) => {
           resizeMode="cover"
         />
         {renderRatingBadge()}
-        {restaurant.isPureVeg && (
-          <View style={[styles.vegBadge, { 
-            backgroundColor: colors.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.95)',
-            borderColor: '#4CAF50' 
-          }]}>
-            <Text style={styles.vegText}>🟢 Pure Veg</Text>
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  // Render delivery info chip
-  const renderDeliveryChip = () => (
-    <View style={[styles.deliveryChip, { backgroundColor: colors.background }]}>
-      <Ionicons name="time-outline" size={12} color={colors.textSecondary} />
-      <Text style={[styles.deliveryChipText, { color: colors.textSecondary }]}>{restaurant.time}</Text>
-    </View>
-  );
-
-  // Render discount badge
-  const renderDiscountBadge = () => {
-    if (!restaurant.discount) return null;
-    
-    return (
-      <View style={[styles.discountBadge, { 
-        backgroundColor: colors.isDark ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255, 107, 53, 0.1)' 
-      }]}>
-        <Ionicons name="pricetag-outline" size={10} color={colors.primary} />
-        <Text style={[styles.discountText, { color: colors.primary }]}>{restaurant.discount}</Text>
       </View>
     );
   };
@@ -100,23 +68,6 @@ const RestaurantCard = ({ restaurant }) => {
             </Text>
           </View>
         </View>
-        
-        <View style={styles.footer}>
-          {/* {renderDeliveryChip()} */}
-          {/* {renderDiscountBadge()} */}
-        </View>
-        
-        {restaurant.noPackagingCharges && (
-          <View style={[styles.offerContainer, { 
-            backgroundColor: colors.isDark ? 'rgba(0, 168, 80, 0.1)' : '#FFF8F6',
-            borderLeftColor: colors.primary 
-          }]}>
-            <Ionicons name="leaf-outline" size={12} color={colors.primary} />
-            <Text style={[styles.offerText, { color: colors.primary }]}>
-              No packaging charges
-            </Text>
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );
@@ -124,13 +75,13 @@ const RestaurantCard = ({ restaurant }) => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 16,
-    elevation: 2,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -166,65 +117,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  vegBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  vegText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#4CAF50',
-  },
   infoContainer: {
-    padding: 12,
+    padding: 16,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   restaurantName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     flex: 1,
     marginRight: 8,
-  },
-  freeDeliveryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  freeDeliveryText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#4CAF50',
-  },
-  cuisine: {
-    fontSize: 14,
-    marginBottom: 8,
   },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
-  statSeparator: {
-    width: 4,
-    height: 4,
-    backgroundColor: '#CCC',
-    borderRadius: 2,
-    marginHorizontal: 8,
+    gap: 6,
   },
   rating: {
     fontSize: 14,
@@ -232,55 +147,6 @@ const styles = StyleSheet.create({
   },
   reviewsCount: {
     fontSize: 12,
-  },
-  distance: {
-    fontSize: 14,
-  },
-  price: {
-    fontSize: 14,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  deliveryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    gap: 4,
-  },
-  deliveryChipText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  discountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    gap: 4,
-  },
-  discountText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  offerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 6,
-    gap: 4,
-    borderLeftWidth: 3,
-  },
-  offerText: {
-    fontSize: 12,
-    fontWeight: '500',
   },
 });
 

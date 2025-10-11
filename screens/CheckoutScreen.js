@@ -1,4 +1,3 @@
-// src/screens/CheckoutScreen.js
 import React, { useState } from 'react';
 import {
   View,
@@ -11,11 +10,13 @@ import {
   StatusBar,
   SafeAreaView,
   Dimensions,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../contexts/CartContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext'; // Import theme hook
+import { useTheme } from '../contexts/ThemeContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,7 +24,7 @@ const CheckoutScreen = ({ route, navigation }) => {
   const { clearCart } = useCart();
   const { cartItems, subtotal, deliveryFee, tax, grandTotal } = route.params;
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme(); // Get theme colors
+  const { colors } = useTheme();
   
   const [customerName, setCustomerName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -31,14 +32,22 @@ const CheckoutScreen = ({ route, navigation }) => {
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
+  // Animation values
+  const scrollY = new Animated.Value(0);
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 60, 100],
+    outputRange: [0, 0.8, 1],
+    extrapolate: 'clamp',
+  });
+
   // Calculate top padding for header
   const getTopPadding = () => {
-    return insets.top + 8;
+    return insets.top + 12;
   };
 
   // Calculate bottom padding
   const getBottomPadding = () => {
-    return insets.bottom + 20;
+    return insets.bottom + 120;
   };
 
   const handlePlaceOrder = async () => {
@@ -87,20 +96,27 @@ const CheckoutScreen = ({ route, navigation }) => {
       ]}
       onPress={() => setPaymentMethod(method)}
     >
+      <LinearGradient
+        colors={paymentMethod === method ? 
+          ['rgba(139, 51, 88, 0.1)', 'rgba(103, 13, 47, 0.05)'] : 
+          ['transparent', 'transparent']
+        }
+        style={StyleSheet.absoluteFill}
+      />
+      
       <View style={styles.paymentLeft}>
         <View style={[
           styles.paymentIconContainer,
           paymentMethod === method && styles.paymentIconContainerSelected,
           { 
             backgroundColor: paymentMethod === method ? 
-              (colors.isDark ? 'rgba(0, 168, 80, 0.2)' : '#ffeae5') : 
-              colors.background 
+              colors.primary : colors.background 
           }
         ]}>
           <Ionicons 
             name={icon} 
             size={20} 
-            color={paymentMethod === method ? colors.primary : colors.textSecondary} 
+            color={paymentMethod === method ? '#fff' : colors.textSecondary} 
           />
         </View>
         <View style={styles.paymentTextContainer}>
@@ -125,35 +141,56 @@ const CheckoutScreen = ({ route, navigation }) => {
         barStyle={colors.isDark ? 'light-content' : 'dark-content'} 
       />
       
-      <ScrollView 
+      {/* Animated Header Background */}
+      <Animated.View style={[styles.headerBackground, {
+        opacity: headerOpacity,
+        backgroundColor: colors.card,
+      }]} />
+
+      {/* Header */}
+      <View style={[styles.header, { 
+        paddingTop: getTopPadding(),
+        backgroundColor: 'transparent',
+      }]}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={styles.backButton}
+        >
+          <LinearGradient
+            colors={["rgba(139, 51, 88, 0.2)", "rgba(103, 13, 47, 0.1)"]}
+            style={styles.backButtonGradient}
+          >
+            <Ionicons name="chevron-back" size={22} color={colors.text} />
+          </LinearGradient>
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Checkout</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <Animated.ScrollView 
         style={[styles.container, { backgroundColor: colors.background }]} 
         showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: getBottomPadding() }}
       >
-        {/* Header */}
-        <View style={[styles.header, { 
-          paddingTop: getTopPadding(),
-          backgroundColor: colors.card,
-          borderBottomColor: colors.border,
-        }]}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()} 
-            style={styles.backButton}
-          >
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
-            <Text style={[styles.backButtonText, { color: colors.text }]}>Cart</Text>
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Checkout</Text>
-          <View style={styles.headerRight} />
-        </View>
-
         {/* Pickup Information */}
         <View style={[styles.section, { 
           backgroundColor: colors.card,
           borderColor: colors.border,
         }]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(139, 51, 88, 0.03)']}
+            style={StyleSheet.absoluteFill}
+          />
+          
           <View style={styles.sectionHeader}>
-            <Ionicons name="storefront" size={20} color={colors.primary} />
+            <View style={[styles.sectionIconContainer, { backgroundColor: 'rgba(139, 51, 88, 0.1)' }]}>
+              <Ionicons name="person" size={20} color={colors.primary} />
+            </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Pickup Information</Text>
           </View>
           
@@ -200,7 +237,7 @@ const CheckoutScreen = ({ route, navigation }) => {
               value={specialInstructions}
               onChangeText={setSpecialInstructions}
               multiline
-              numberOfLines={2}
+              numberOfLines={3}
               textAlignVertical="top"
               placeholderTextColor={colors.textSecondary}
             />
@@ -212,8 +249,15 @@ const CheckoutScreen = ({ route, navigation }) => {
           backgroundColor: colors.card,
           borderColor: colors.border,
         }]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(139, 51, 88, 0.03)']}
+            style={StyleSheet.absoluteFill}
+          />
+          
           <View style={styles.sectionHeader}>
-            <Ionicons name="receipt" size={20} color={colors.primary} />
+            <View style={[styles.sectionIconContainer, { backgroundColor: 'rgba(139, 51, 88, 0.1)' }]}>
+              <Ionicons name="receipt" size={20} color={colors.primary} />
+            </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Summary</Text>
           </View>
           
@@ -224,10 +268,20 @@ const CheckoutScreen = ({ route, navigation }) => {
               { borderBottomColor: colors.border }
             ]}>
               <View style={styles.itemLeft}>
-                <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                <View style={styles.itemHeader}>
+                  <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                  <View style={styles.vegNonVegIndicator}>
+                    <View
+                      style={[
+                        styles.indicator,
+                        item.isVeg ? styles.vegIndicator : styles.nonVegIndicator,
+                      ]}
+                    />
+                  </View>
+                </View>
                 <Text style={[styles.itemQuantity, { color: colors.textSecondary }]}>Qty: {item.quantity}</Text>
               </View>
-              <Text style={[styles.itemPrice, { color: colors.text }]}>
+              <Text style={[styles.itemPrice, { color: colors.primary }]}>
                 ₹{(parseFloat(item.price?.replace('₹', '') || item.price || 0) * item.quantity).toFixed(2)}
               </Text>
             </View>
@@ -239,8 +293,15 @@ const CheckoutScreen = ({ route, navigation }) => {
           backgroundColor: colors.card,
           borderColor: colors.border,
         }]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(139, 51, 88, 0.03)']}
+            style={StyleSheet.absoluteFill}
+          />
+          
           <View style={styles.sectionHeader}>
-            <Ionicons name="card" size={20} color={colors.primary} />
+            <View style={[styles.sectionIconContainer, { backgroundColor: 'rgba(139, 51, 88, 0.1)' }]}>
+              <Ionicons name="card" size={20} color={colors.primary} />
+            </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Payment Method</Text>
           </View>
           
@@ -251,6 +312,7 @@ const CheckoutScreen = ({ route, navigation }) => {
               title="UPI Payment"
               description="Fast and secure UPI payment"
             />
+            
           </View>
         </View>
 
@@ -259,8 +321,15 @@ const CheckoutScreen = ({ route, navigation }) => {
           backgroundColor: colors.card,
           borderColor: colors.border,
         }]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(139, 51, 88, 0.03)']}
+            style={StyleSheet.absoluteFill}
+          />
+          
           <View style={styles.sectionHeader}>
-            <Ionicons name="pricetag" size={20} color={colors.primary} />
+            <View style={[styles.sectionIconContainer, { backgroundColor: 'rgba(139, 51, 88, 0.1)' }]}>
+              <Ionicons name="pricetag" size={20} color={colors.primary} />
+            </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Price Details</Text>
           </View>
           
@@ -307,49 +376,71 @@ const CheckoutScreen = ({ route, navigation }) => {
         <View style={[styles.infoSection, { 
           backgroundColor: colors.card,
         }]}>
+          <LinearGradient
+            colors={['rgba(139, 51, 88, 0.05)', 'rgba(103, 13, 47, 0.02)']}
+            style={StyleSheet.absoluteFill}
+          />
+          
           <View style={styles.infoItem}>
-            <Ionicons name="time" size={16} color={colors.textSecondary} />
-            <Text style={[styles.infoText, { color: colors.textSecondary }]}>Ready in 15-20 mins</Text>
+            <View style={[styles.infoIconContainer, { backgroundColor: 'rgba(139, 51, 88, 0.1)' }]}>
+              <Ionicons name="time" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.infoText, { color: colors.text }]}>Ready in 15-20 mins</Text>
           </View>
           <View style={styles.infoItem}>
-            <Ionicons name="storefront" size={16} color={colors.textSecondary} />
-            <Text style={[styles.infoText, { color: colors.textSecondary }]}>Store Pickup</Text>
+            <View style={[styles.infoIconContainer, { backgroundColor: 'rgba(139, 51, 88, 0.1)' }]}>
+              <Ionicons name="storefront" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.infoText, { color: colors.text }]}>Store Pickup</Text>
           </View>
           <View style={styles.infoItem}>
-            <Ionicons name="shield-checkmark" size={16} color={colors.textSecondary} />
-            <Text style={[styles.infoText, { color: colors.textSecondary }]}>Secure payment</Text>
+            <View style={[styles.infoIconContainer, { backgroundColor: 'rgba(139, 51, 88, 0.1)' }]}>
+              <Ionicons name="shield-checkmark" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.infoText, { color: colors.text }]}>Secure payment</Text>
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Fixed Place Order Button */}
       <View style={[styles.footer, { 
         backgroundColor: colors.card,
         borderTopColor: colors.border,
-        paddingBottom: insets.bottom 
+        paddingBottom: insets.bottom + 10,
       }]}>
+        <LinearGradient
+          colors={['rgba(139, 51, 88, 0.02)', 'rgba(103, 13, 47, 0.01)']}
+          style={StyleSheet.absoluteFill}
+        />
+        
         <TouchableOpacity 
-          style={[
-            styles.placeOrderButton, 
-            isPlacingOrder && styles.placeOrderButtonDisabled,
-            { backgroundColor: isPlacingOrder ? colors.textSecondary : colors.primary }
-          ]}
+          style={styles.placeOrderButton}
           onPress={handlePlaceOrder}
           disabled={isPlacingOrder}
         >
-          <View style={styles.orderButtonContent}>
-            <View>
-              <Text style={styles.placeOrderText}>
-                {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
-              </Text>
-              <Text style={styles.orderSubtext}>
-                {!isPlacingOrder && `₹${grandTotal.toFixed(2)} • Pay with UPI`}
-              </Text>
+          <LinearGradient
+            colors={isPlacingOrder ? 
+              ["rgba(139, 51, 88, 0.6)", "rgba(103, 13, 47, 0.4)"] : 
+              ["#8B3358", "#670D2F"]
+            }
+            style={styles.placeOrderGradient}
+          >
+            <View style={styles.orderButtonContent}>
+              <View>
+                <Text style={styles.placeOrderText}>
+                  {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
+                </Text>
+                <Text style={styles.orderSubtext}>
+                  {!isPlacingOrder && `₹${grandTotal.toFixed(2)} • Pay with ${paymentMethod.toUpperCase()}`}
+                </Text>
+              </View>
+              {!isPlacingOrder && (
+                <View style={styles.arrowContainer}>
+                  <Ionicons name="chevron-forward" size={20} color="#fff" />
+                </View>
+              )}
             </View>
-            {!isPlacingOrder && (
-              <Ionicons name="chevron-forward" size={20} color="#fff" />
-            )}
-          </View>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -360,83 +451,96 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  headerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    zIndex: 999,
+  },
   container: {
     flex: 1,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
+    zIndex: 1000,
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 4,
+  backButtonGradient: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   headerRight: {
-    width: 32,
+    width: 40,
   },
   section: {
     margin: 16,
     marginBottom: 12,
     padding: 20,
-    borderRadius: 16,
+    borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
     borderWidth: 1,
+    overflow: 'hidden',
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+  },
+  sectionIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 8,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   textInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     fontSize: 16,
+    fontWeight: '500',
   },
   textArea: {
-    minHeight: 80,
+    minHeight: 100,
   },
   orderItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
   },
   lastOrderItem: {
@@ -445,17 +549,42 @@ const styles = StyleSheet.create({
   itemLeft: {
     flex: 1,
   },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
   itemName: {
-    fontSize: 15,
-    fontWeight: '500',
-    marginBottom: 4,
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+    marginRight: 10,
+  },
+  vegNonVegIndicator: {
+    // Position handled inline
+  },
+  indicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  vegIndicator: {
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
+  },
+  nonVegIndicator: {
+    backgroundColor: "#E23E3E",
+    borderColor: "#E23E3E",
   },
   itemQuantity: {
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: '500',
   },
   itemPrice: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   paymentOptions: {
     marginTop: 8,
@@ -464,10 +593,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 12,
+    overflow: 'hidden',
   },
   paymentOptionSelected: {
     // Styles handled inline
@@ -478,12 +608,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   paymentIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   paymentIconContainerSelected: {
     // Styles handled inline
@@ -494,15 +624,15 @@ const styles = StyleSheet.create({
   paymentTitle: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   paymentDescription: {
-    fontSize: 13,
+    fontSize: 14,
   },
   radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
@@ -511,87 +641,112 @@ const styles = StyleSheet.create({
     // Styles handled inline
   },
   radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   priceLabel: {
     fontSize: 15,
+    fontWeight: '500',
   },
   priceValue: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   divider: {
     height: 1,
-    marginVertical: 12,
+    marginVertical: 14,
   },
   grandTotal: {
-    marginTop: 4,
+    marginTop: 8,
   },
   grandTotalLabel: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   grandTotalValue: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   infoSection: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 16,
+    padding: 20,
     marginHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 20,
+    overflow: 'hidden',
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  infoIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
   infoText: {
-    fontSize: 13,
-    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
   },
   footer: {
     borderTopWidth: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingHorizontal: 20,
+    paddingTop: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 8,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 12,
+    overflow: 'hidden',
   },
   placeOrderButton: {
-    borderRadius: 14,
-    paddingVertical: 18,
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  placeOrderButtonDisabled: {
-    // Background handled inline
+  placeOrderGradient: {
+    paddingVertical: 20,
+    borderRadius: 18,
   },
   orderButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   placeOrderText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   orderSubtext: {
     color: 'rgba(255,255,255,0.9)',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
+  },
+  arrowContainer: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

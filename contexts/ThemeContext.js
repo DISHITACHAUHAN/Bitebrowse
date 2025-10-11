@@ -23,17 +23,17 @@ export const ThemeProvider = ({ children }) => {
     primary: '#00a850',
     primaryGradient: ['#8B3358', '#670D2F', '#3A081C'], // Burgundy gradient for navbars
     
-    // Background colors
-    background: '#ffffff',
+    // Background colors - Warm off-white that complements burgundy
+    background: '#f4f4f4',
     card: '#ffffff',
     tabBar: '#ffffff',
     
     // Text colors
-    text: '#1a1a1a',
-    textSecondary: '#666666',
+    text: '#2d1a1f',
+    textSecondary: '#7a5c6c',
     
     // UI colors
-    border: '#e6e6e6',
+    border: '#f0e6e9',
     error: '#dc2626',
     white: '#ffffff',
     black: '#000000',
@@ -42,6 +42,9 @@ export const ThemeProvider = ({ children }) => {
     success: '#00a850',
     warning: '#f59e0b',
     info: '#3b82f6',
+    
+    // Theme-specific
+    isDark: false,
   };
 
   const darkColors = {
@@ -49,17 +52,17 @@ export const ThemeProvider = ({ children }) => {
     primary: '#00a850',
     primaryGradient: ['#8B3358', '#670D2F', '#3A081C'], // Same gradient for dark mode
     
-    // Background colors
-    background: '#121212',
-    card: '#1e1e1e',
-    tabBar: '#1e1e1e',
+    // Background colors - Deep plum that complements burgundy
+    background: '#1a0f14',
+    card: '#25171f',
+    tabBar: '#25171f',
     
     // Text colors
-    text: '#ffffff',
-    textSecondary: '#a0a0a0',
+    text: '#f8f1f3',
+    textSecondary: '#b8a4af',
     
     // UI colors
-    border: '#2a2a2a',
+    border: '#3a2830',
     error: '#ef4444',
     white: '#ffffff',
     black: '#000000',
@@ -68,6 +71,9 @@ export const ThemeProvider = ({ children }) => {
     success: '#00a850',
     warning: '#f59e0b',
     info: '#3b82f6',
+    
+    // Theme-specific
+    isDark: true,
   };
 
   useEffect(() => {

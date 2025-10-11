@@ -39,7 +39,6 @@ export default function TopNavbar({
         start={{ x: 0, y: 1 }}   // bottom-left
         end={{ x: 1, y: 0 }}     // top-right
       >
-
         <View
           style={[
             styles.container,
@@ -48,7 +47,6 @@ export default function TopNavbar({
         >
           {/* Left Section - Location & Greeting */}
           <View style={styles.leftSection}>
-            
             <Text style={[styles.greetingText, { color: "#FFFFFF" }]}>
               Hello, John 👋
             </Text>
@@ -65,31 +63,29 @@ export default function TopNavbar({
                 style={[styles.profileImage, { borderColor: "#FFFFFF" }]}
               />
             </TouchableOpacity>
-
-            
           </View>
         </View>
+
+        {/* Tagline Section */}
+        <View style={[styles.taglineContainer, { paddingHorizontal: responsivePadding }]}>
+          <Text style={styles.tagline}>
+            Don't wait, order your food!
+          </Text>
+          <View style={styles.taglineUnderline} />
+        </View>
+
+        {/* Search Bar Section */}
+        <View
+          style={[styles.searchContainer, { paddingHorizontal: responsivePadding }]}
+        >
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={onSearchChange}
+            onClearSearch={onClearSearch}
+            compact={false}
+          />
+        </View>
       </LinearGradient>
-
-      {/* Search Bar Section */}
-      <LinearGradient
-        colors={["#8B3358", "#670D2F", "#3A081C"]}
-        start={{ x: 0, y: 1 }}   // bottom-left
-        end={{ x: 1, y: 0 }}     // top-right
-      >
-
-      <View
-        style={[styles.searchContainer, { paddingHorizontal: responsivePadding }]}
-      >
-        <SearchBar
-          searchQuery={searchQuery}
-          onSearchChange={onSearchChange}
-          onClearSearch={onClearSearch}
-          compact={false}
-        />
-
-      </View>
-</LinearGradient>
     </SafeAreaView>
   );
 }
@@ -168,8 +164,30 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
   },
+  taglineContainer: {
+    alignItems: 'center',
+    paddingBottom: 8,
+  },
+  tagline: {
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    marginBottom: 4,
+  },
+  taglineUnderline: {
+    height: 2,
+    width: 70,
+    borderRadius: 1,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.8,
+  },
   searchContainer: {
     paddingBottom: 16,
-    paddingTop: 8,
+    paddingTop: 0,
   },
 });

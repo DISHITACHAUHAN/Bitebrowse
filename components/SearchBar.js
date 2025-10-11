@@ -1,6 +1,7 @@
 import React from "react";
 import {
   View,
+  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -20,6 +21,7 @@ export default function SearchBar({
   autoFocus = false,
   onSubmitEditing,
   style,
+  showTagline = false,
   ...props 
 }) {
   const { width } = useWindowDimensions();
@@ -67,83 +69,105 @@ export default function SearchBar({
   const responsiveSize = getResponsiveSize();
 
   return (
-    <View style={[
-      styles.container, 
-      { 
-        backgroundColor: colors.searchBackground || (isDark ? '#2a2a2a' : '#f8f9fa'),
-        height: responsiveSize.height,
-        paddingHorizontal: responsiveSize.paddingHorizontal,
-        borderRadius: responsiveSize.borderRadius,
-        borderColor: colors.border || (isDark ? '#444' : '#e9ecef'),
-        borderWidth: StyleSheet.hairlineWidth,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: isDark ? 0.1 : 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-      },
-      style
-    ]}>
-      <Ionicons 
-        name="search" 
-        size={responsiveSize.iconSize} 
-        color={colors.textSecondary} 
-        style={styles.searchIcon}
-      />
-      
-      <TextInput
-        style={[
-          styles.input,
-          {
-            color: colors.text,
-            fontSize: responsiveSize.fontSize,
-            height: responsiveSize.height - 16, // Ensure proper height calculation
-            lineHeight: responsiveSize.fontSize, // Match line height to font size
-          }
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor={colors.textSecondary}
-        value={searchQuery}
-        onChangeText={onSearchChange}
-        returnKeyType="search"
-        clearButtonMode="never"
-        autoFocus={autoFocus}
-        onSubmitEditing={onSubmitEditing}
-        autoCorrect={false}
-        autoCapitalize="none"
-        {...props}
-      />
-      
-      {searchQuery ? (
-        <TouchableOpacity 
-          onPress={handleClearSearch} 
-          style={styles.clearButton}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons 
-            name="close-circle" 
-            size={responsiveSize.iconSize} 
-            color={colors.textSecondary} 
-          />
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity 
-          onPress={handleFilterPress}
-          style={styles.filterButton}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons 
-            name="options-outline" 
-            size={responsiveSize.iconSize} 
-            color={colors.textSecondary} 
-          />
-        </TouchableOpacity>
+    <View style={[styles.wrapper, style]}>
+      {/* Tagline */}
+      {showTagline && (
+        <View style={styles.taglineContainer}>
+          <Text style={[styles.tagline, { color: colors.text }]}>
+            Don't wait, order your food!
+          </Text>
+        </View>
       )}
+      
+      <View style={[
+        styles.container, 
+        { 
+          backgroundColor: colors.searchBackground || (isDark ? '#2a2a2a' : '#f8f9fa'),
+          height: responsiveSize.height,
+          paddingHorizontal: responsiveSize.paddingHorizontal,
+          borderRadius: responsiveSize.borderRadius,
+          borderColor: colors.border || (isDark ? '#444' : '#e9ecef'),
+          borderWidth: StyleSheet.hairlineWidth,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.1 : 0.05,
+          shadowRadius: 8,
+          elevation: 2,
+        }
+      ]}>
+        <Ionicons 
+          name="search" 
+          size={responsiveSize.iconSize} 
+          color={colors.textSecondary} 
+          style={styles.searchIcon}
+        />
+        
+        <TextInput
+          style={[
+            styles.input,
+            {
+              color: colors.text,
+              fontSize: responsiveSize.fontSize,
+              height: responsiveSize.height - 16,
+              lineHeight: responsiveSize.fontSize,
+            }
+          ]}
+          placeholder={placeholder}
+          placeholderTextColor={colors.textSecondary}
+          value={searchQuery}
+          onChangeText={onSearchChange}
+          returnKeyType="search"
+          clearButtonMode="never"
+          autoFocus={autoFocus}
+          onSubmitEditing={onSubmitEditing}
+          autoCorrect={false}
+          autoCapitalize="none"
+          {...props}
+        />
+        
+        {searchQuery ? (
+          <TouchableOpacity 
+            onPress={handleClearSearch} 
+            style={styles.clearButton}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons 
+              name="close-circle" 
+              size={responsiveSize.iconSize} 
+              color={colors.textSecondary} 
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity 
+            onPress={handleFilterPress}
+            style={styles.filterButton}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons 
+              name="options-outline" 
+              size={responsiveSize.iconSize} 
+              color={colors.textSecondary} 
+            />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    width: '100%',
+  },
+  taglineContainer: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tagline: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   container: {
     flexDirection: "row",
     alignItems: "center",
@@ -157,7 +181,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     includeFontPadding: false,
     textAlignVertical: 'center',
-    // Remove any margin or padding that might cause misalignment
     margin: 0,
     paddingTop: 0,
     paddingBottom: 0,
