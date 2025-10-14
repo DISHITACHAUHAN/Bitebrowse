@@ -5,18 +5,16 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
-  Platform
 } from "react-native";
-import PromoCarousel from '../components/PromoCarousel'
+import PromoCarousel from '../components/PromoCarousel';
 import TopNavbar from "../components/TopNavbar";
-import SearchBar from "../components/SearchBar";
 import CategoriesList from "../components/CategoriesList";
 import NearbyRestaurants from "../components/NearbyRestaurants";
+import { useTheme } from "../contexts/ThemeContext";
 
-// Add the missing responsive functions
+// Responsive functions
 const { width, height } = Dimensions.get('window');
 
-// Guideline sizes based on standard ~5.5 inch screen
 const GUIDELINE_WIDTH = 375;
 const GUIDELINE_HEIGHT = 812;
 
@@ -42,7 +40,7 @@ const responsive = {
   }
 };
 
-// Mock Data (expanded slightly for completeness)
+// Mock Data
 const MOCK_RESTAURANTS = [
   {
     id: "1",
@@ -82,6 +80,7 @@ const CUISINE_CATEGORIES = [
 ];
 
 export default function HomeScreen({ navigation }) {
+  const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [restaurants, setRestaurants] = useState(MOCK_RESTAURANTS);
   const [filteredRestaurants, setFilteredRestaurants] = useState(MOCK_RESTAURANTS);
@@ -104,8 +103,11 @@ export default function HomeScreen({ navigation }) {
       );
     }
 
-    setFilteredRestaurants(filtered);
-    setLoading(false);
+    // Simulate API delay
+    setTimeout(() => {
+      setFilteredRestaurants(filtered);
+      setLoading(false);
+    }, 300);
   }, [searchQuery, selectedCategory, restaurants]);
 
   const handleRestaurantPress = (restaurant) => {
@@ -117,28 +119,33 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <TopNavbar />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Top Navbar with integrated Search */}
+      <TopNavbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onClearSearch={handleClearSearch}
+      />
       
       {/* Main Scrollable Content */}
-      <ScrollView contentContainerStyle={{ paddingBottom: responsive.spacing.xl }}>
-        {/* Location Header */}
-        
-
-        {/* Search Bar */}
-        <SearchBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onClearSearch={handleClearSearch}
-        />
-        
+      <ScrollView 
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={{ 
+          paddingBottom: responsive.spacing.xl,
+          backgroundColor: colors.background 
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Promo Carousel */}
         <PromoCarousel />
-
-
+        
         {/* Restaurants */}
         <View style={[styles.restaurantsSection, { marginTop: responsive.spacing.lg }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { fontSize: responsive.font.xxl }]}>
+            <Text style={[styles.sectionTitle, { 
+              fontSize: responsive.font.xxl,
+              color: colors.text 
+            }]}>
               Food Court
             </Text>
           </View>
@@ -155,13 +162,8 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  locationContainer: {
+  categoriesSection: {
     paddingHorizontal: responsive.spacing.lg,
-    paddingBottom: responsive.spacing.xs
-  },
-  locationText: {
-    color: "#666",
-    fontWeight: "500"
   },
   restaurantsSection: { 
     paddingHorizontal: responsive.spacing.lg 

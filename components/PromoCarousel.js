@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image
 } from "react-native";
+import { useTheme } from "../contexts/ThemeContext"; // Import theme hook
 import one from '../assets/1.png';
 import two from '../assets/2.png'; // Add your other local images
 import three from '../assets/3.png';
@@ -37,6 +38,7 @@ export default function ImageCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef();
   const autoScrollTimer = useRef(null);
+  const { colors } = useTheme(); // Get theme colors
 
   useEffect(() => {
     const startAutoScroll = () => {
@@ -128,7 +130,7 @@ export default function ImageCarousel() {
               style={[
                 styles.dot,
                 { 
-                  backgroundColor: i === activeIndex ? "#000" : "rgba(0,0,0,0.2)",
+                  backgroundColor: i === activeIndex ? colors.primary : colors.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
                   width: i === activeIndex ? 20 : 8,
                 },
               ]}
@@ -152,6 +154,15 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: 12,
     overflow: "hidden",
+    // Add shadow that works in both themes
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   image: {
     width: "100%",
@@ -169,5 +180,6 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     marginHorizontal: 4,
+    transition: 'all 0.3s ease', // Smooth transition for dot width changes
   },
 });
